@@ -8,7 +8,11 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import edu.cit.salonga.assetflow.models.RegisterRequest
+import edu.cit.salonga.assetflow.network.ApiClient
+import kotlinx.coroutines.launch
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -78,8 +82,47 @@ class RegisterActivity : AppCompatActivity() {
             return
         }
 
-        // If all validations pass, show success
-        showSuccess("Registration validated! Ready for API integration")
+        // All validations pass - call API
+        registerWithBackend(name, email, password)
+    }
+
+    private fun registerWithBackend(name: String, email: String, password: String) {
+        // Show loading state
+        registerButton.isEnabled = false
+        registerButton.text = "Registering..."
+
+        lifecycleScope.launch {
+            try {
+                val request = RegisterRequest(name, email, password)
+                val response = ApiClient.authService.register(request)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val authResponse = response.body()!!
+                    if (authResponse.success) {
+                        showSuccess("Account created successfully! UserId: ${authResponse.userId}")
+                        // Clear fields
+                        nameInput.text.clear()
+                        emailInput.text.clear()
+                        passwordInput.text.clear()
+                        confirmPasswordInput.text.clear()
+                        // TODO: Navigate to LoginActivity after delay
+                    } else {
+                        showError(authResponse.message ?: "Registration failed")
+                        registerButton.isEnabled = true
+                        registerButton.text = "Register"
+                    }
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: "Registration failed"
+                    showError(errorMsg)
+                    registerButton.isEnabled = true
+                    registerButton.text = "Register"
+                }
+            } catch (e: Exception) {
+                showError("Error: ${e.message ?: "Unknown error occurred"}")
+                registerButton.isEnabled = true
+                registerButton.text = "Register"
+            }
+        }
     }
 
     private fun showError(message: String) {
