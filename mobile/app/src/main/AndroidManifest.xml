@@ -28,6 +28,12 @@
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.Assetflow" />
+        
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Assetflow" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

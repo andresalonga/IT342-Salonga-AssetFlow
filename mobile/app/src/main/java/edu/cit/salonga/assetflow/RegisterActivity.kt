@@ -40,8 +40,8 @@ class RegisterActivity : AppCompatActivity() {
         registerButton.setOnClickListener { validateAndRegister() }
         
         loginLink.setOnClickListener {
-            // TODO: Navigate to LoginActivity when it's created
-            showError("Login screen coming soon...")
+            startActivity(android.content.Intent(this, LoginActivity::class.java))
+            finish()
         }
     }
 

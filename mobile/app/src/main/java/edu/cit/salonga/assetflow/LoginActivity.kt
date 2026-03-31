@@ -1,0 +1,119 @@
+package edu.cit.salonga.assetflow
+
+import android.os.Bundle
+import android.text.TextUtils
+import android.util.Patterns
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.snackbar.Snackbar
+import edu.cit.salonga.assetflow.models.LoginRequest
+import edu.cit.salonga.assetflow.network.ApiClient
+import kotlinx.coroutines.launch
+
+class LoginActivity : AppCompatActivity() {
+
+    private lateinit var emailInput: EditText
+    private lateinit var passwordInput: EditText
+    private lateinit var loginButton: Button
+    private lateinit var signUpLink: TextView
+    private lateinit var loginContainer: LinearLayout
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
+
+        // Initialize views
+        emailInput = findViewById(R.id.emailInput)
+        passwordInput = findViewById(R.id.passwordInput)
+        loginButton = findViewById(R.id.loginButton)
+        signUpLink = findViewById(R.id.signUpLink)
+        loginContainer = findViewById(R.id.loginContainer)
+
+        loginButton.setOnClickListener { validateAndLogin() }
+        
+        signUpLink.setOnClickListener {
+            startActivity(intent.putExtra("navigate_to", "register"))
+            finish()
+        }
+    }
+
+    private fun validateAndLogin() {
+        val email = emailInput.text.toString().trim()
+        val password = passwordInput.text.toString()
+
+        // Validation
+        if (TextUtils.isEmpty(email)) {
+            showError("Email is required")
+            return
+        }
+
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            showError("Invalid email format")
+            return
+        }
+
+        if (TextUtils.isEmpty(password)) {
+            showError("Password is required")
+            return
+        }
+
+        if (password.length < 6) {
+            showError("Password must be at least 6 characters")
+            return
+        }
+
+        // All validations pass - call API
+        loginWithBackend(email, password)
+    }
+
+    private fun loginWithBackend(email: String, password: String) {
+        // Show loading state
+        loginButton.isEnabled = false
+        loginButton.text = "Signing in..."
+
+        lifecycleScope.launch {
+            try {
+                val request = LoginRequest(email, password)
+                val response = ApiClient.authService.login(request)
+
+                if (response.isSuccessful && response.body() != null) {
+                    val authResponse = response.body()!!
+                    if (authResponse.success) {
+                        showSuccess("Login successful! Welcome ${authResponse.name}")
+                        // TODO: Save JWT token to SharedPreferences
+                        // TODO: Navigate to Dashboard after delay
+                    } else {
+                        showError(authResponse.message ?: "Login failed")
+                        loginButton.isEnabled = true
+                        loginButton.text = "Sign In"
+                    }
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: "Login failed"
+                    showError(errorMsg)
+                    loginButton.isEnabled = true
+                    loginButton.text = "Sign In"
+                }
+            } catch (e: Exception) {
+                showError("Error: ${e.message ?: "Unknown error occurred"}")
+                loginButton.isEnabled = true
+                loginButton.text = "Sign In"
+            }
+        }
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(loginContainer, message, Snackbar.LENGTH_LONG)
+            .setBackgroundTint(resources.getColor(android.R.color.holo_red_dark, null))
+            .show()
+    }
+
+    private fun showSuccess(message: String) {
+        Snackbar.make(loginContainer, message, Snackbar.LENGTH_LONG)
+            .setBackgroundTint(resources.getColor(android.R.color.holo_green_dark, null))
+            .show()
+    }
+}
