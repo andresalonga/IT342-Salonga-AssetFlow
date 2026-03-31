@@ -1,5 +1,6 @@
 package edu.cit.salonga.assetflow
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Patterns
@@ -12,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import edu.cit.salonga.assetflow.models.RegisterRequest
 import edu.cit.salonga.assetflow.network.ApiClient
+import edu.cit.salonga.assetflow.utils.TokenManager
 import kotlinx.coroutines.launch
 
 class RegisterActivity : AppCompatActivity() {
@@ -99,13 +101,31 @@ class RegisterActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
                     if (authResponse.success) {
-                        showSuccess("Account created successfully! UserId: ${authResponse.userId}")
+                        // Save token and user info
+                        if (authResponse.token != null) {
+                            TokenManager.saveToken(authResponse.token!!)
+                        }
+                        if (authResponse.userId != null && authResponse.name != null && 
+                            authResponse.email != null && authResponse.role != null) {
+                            TokenManager.saveUserInfo(
+                                authResponse.userId!!,
+                                authResponse.name!!,
+                                authResponse.email!!,
+                                authResponse.role!!
+                            )
+                        }
+                        
+                        showSuccess("Account created successfully!")
                         // Clear fields
                         nameInput.text.clear()
                         emailInput.text.clear()
                         passwordInput.text.clear()
                         confirmPasswordInput.text.clear()
-                        // TODO: Navigate to LoginActivity after delay
+                        // Navigate to Dashboard after delay
+                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                            startActivity(Intent(this@RegisterActivity, DashboardActivity::class.java))
+                            finish()
+                        }, 1500)
                     } else {
                         showError(authResponse.message ?: "Registration failed")
                         registerButton.isEnabled = true
