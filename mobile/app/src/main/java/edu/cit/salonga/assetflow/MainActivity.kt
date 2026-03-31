@@ -8,8 +8,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Navigate to RegisterActivity and finish MainActivity
-        startActivity(Intent(this, RegisterActivity::class.java))
+        // Navigate to SplashActivity and finish MainActivity
+        startActivity(Intent(this, SplashActivity::class.java))
         finish()
     }
 }
