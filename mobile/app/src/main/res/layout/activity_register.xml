@@ -74,70 +74,44 @@
                     android:padding="24dp">
 
                     <!-- Name Input -->
-                    <com.google.android.material.textinput.TextInputLayout
+                    <EditText
+                        android:id="@+id/nameInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:startIconDrawable="@drawable/ic_person">
-
-                        <EditText
-                            android:id="@+id/nameInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/full_name"
-                            android:inputType="text"
-                            android:textSize="16sp" />
-                    </com.google.android.material.textinput.TextInputLayout>
+                        android:hint="@string/full_name"
+                        android:inputType="text"
+                        android:textSize="16sp" />
 
                     <!-- Email Input -->
-                    <com.google.android.material.textinput.TextInputLayout
+                    <EditText
+                        android:id="@+id/emailInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:startIconDrawable="@drawable/ic_email">
-
-                        <EditText
-                            android:id="@+id/emailInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/email"
-                            android:inputType="textEmailAddress"
-                            android:textSize="16sp" />
-                    </com.google.android.material.textinput.TextInputLayout>
+                        android:hint="@string/email"
+                        android:inputType="textEmailAddress"
+                        android:textSize="16sp" />
 
                     <!-- Password Input -->
-                    <com.google.android.material.textinput.TextInputLayout
+                    <EditText
+                        android:id="@+id/passwordInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        app:startIconDrawable="@drawable/ic_lock"
-                        app:endIconMode="password_toggle">
-
-                        <EditText
-                            android:id="@+id/passwordInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/password"
-                            android:inputType="textPassword"
-                            android:textSize="16sp" />
-                    </com.google.android.material.textinput.TextInputLayout>
+                        android:hint="@string/password"
+                        android:inputType="textPassword"
+                        android:textSize="16sp" />
 
                     <!-- Confirm Password Input -->
-                    <com.google.android.material.textinput.TextInputLayout
+                    <EditText
+                        android:id="@+id/confirmPasswordInput"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="24dp"
-                        app:startIconDrawable="@drawable/ic_lock"
-                        app:endIconMode="password_toggle">
-
-                        <EditText
-                            android:id="@+id/confirmPasswordInput"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/confirm_password"
-                            android:inputType="textPassword"
-                            android:textSize="16sp" />
-                    </com.google.android.material.textinput.TextInputLayout>
+                        android:hint="@string/confirm_password"
+                        android:inputType="textPassword"
+                        android:textSize="16sp" />
 
                     <!-- Register Button -->
                     <Button

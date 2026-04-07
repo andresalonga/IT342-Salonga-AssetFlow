@@ -10,7 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
+import android.widget.Toast
 import edu.cit.salonga.assetflow.models.LoginRequest
 import edu.cit.salonga.assetflow.network.ApiClient
 import edu.cit.salonga.assetflow.utils.TokenManager
@@ -22,7 +22,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var loginButton: Button
     private lateinit var signUpLink: TextView
-    private lateinit var loginContainer: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,12 +32,11 @@ class LoginActivity : AppCompatActivity() {
         passwordInput = findViewById(R.id.passwordInput)
         loginButton = findViewById(R.id.loginButton)
         signUpLink = findViewById(R.id.signUpLink)
-        loginContainer = findViewById(R.id.loginContainer)
 
         loginButton.setOnClickListener { validateAndLogin() }
         
         signUpLink.setOnClickListener {
-            startActivity(intent.putExtra("navigate_to", "register"))
+            startActivity(Intent(this, RegisterActivity::class.java))
             finish()
         }
     }
@@ -125,14 +123,10 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun showError(message: String) {
-        Snackbar.make(loginContainer, message, Snackbar.LENGTH_LONG)
-            .setBackgroundTint(resources.getColor(android.R.color.holo_red_dark, null))
-            .show()
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
     private fun showSuccess(message: String) {
-        Snackbar.make(loginContainer, message, Snackbar.LENGTH_LONG)
-            .setBackgroundTint(resources.getColor(android.R.color.holo_green_dark, null))
-            .show()
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }
