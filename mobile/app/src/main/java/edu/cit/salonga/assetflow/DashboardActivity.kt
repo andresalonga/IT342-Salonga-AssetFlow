@@ -1,6 +1,8 @@
 package edu.cit.salonga.assetflow
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -40,9 +42,27 @@ class DashboardActivity : AppCompatActivity() {
                 setMargins(0, 16, 0, 0)
             }
         }
+
+        val logoutButton = Button(this).apply {
+            text = "Logout"
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                setMargins(0, 24, 0, 0)
+            }
+            setOnClickListener {
+                TokenManager.clearAll()
+                val intent = Intent(this@DashboardActivity, LoginActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
+            }
+        }
         
         layout.addView(titleView)
         layout.addView(userInfoView)
+        layout.addView(logoutButton)
         
         setContentView(layout)
     }
