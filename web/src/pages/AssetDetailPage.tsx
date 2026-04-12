@@ -1,17 +1,31 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { MOCK_ASSETS } from "@/data/mock";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/AppLayout";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ArrowLeft, Edit, Trash2, Calendar, Tag, Hash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { borrowApi, getToken } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const AssetDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin, isStudent } = useAuth();
+  const { isAdmin, isStudent, user } = useAuth();
   const { toast } = useToast();
+  const [openBorrowDialog, setOpenBorrowDialog] = useState(false);
+  const [dueDate, setDueDate] = useState("");
+  const [isBorrowing, setIsBorrowing] = useState(false);
   const asset = MOCK_ASSETS.find((a) => a.id === id);
 
   if (!asset) {
@@ -24,8 +38,49 @@ const AssetDetailPage = () => {
     );
   }
 
-  const handleBorrow = () => {
-    toast({ title: "Request submitted!", description: `Your borrow request for ${asset.name} has been sent.` });
+  const handleBorrowClick = () => {
+    // Set default due date to 2 weeks from today
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 14);
+    setDueDate(defaultDate.toISOString().split("T")[0]);
+    setOpenBorrowDialog(true);
+  };
+
+  const handleSubmitBorrow = async () => {
+    if (!dueDate) {
+      toast({ title: "Error", description: "Please select a due date", variant: "destructive" });
+      return;
+    }
+
+    setIsBorrowing(true);
+    try {
+      // Store asset info for the API call
+      localStorage.setItem("currentAsset", JSON.stringify(asset));
+      
+      const token = getToken();
+      await borrowApi.submitRequest(
+        {
+          assetId: asset.id,
+          dueDate: dueDate,
+        },
+        token || ""
+      );
+
+      toast({ 
+        title: "Success!", 
+        description: `Your borrow request for ${asset.name} has been submitted to the admin.`
+      });
+      setOpenBorrowDialog(false);
+      setDueDate("");
+    } catch (error) {
+      toast({ 
+        title: "Error", 
+        description: "Failed to submit borrow request",
+        variant: "destructive"
+      });
+    } finally {
+      setIsBorrowing(false);
+    }
   };
 
   return (
@@ -72,7 +127,7 @@ const AssetDetailPage = () => {
             {/* Actions */}
             <div className="flex gap-3">
               {isStudent && asset.status === "available" && (
-                <Button className="flex-1" onClick={handleBorrow}>
+                <Button className="flex-1" onClick={handleBorrowClick}>
                   Submit Borrow Request
                 </Button>
               )}
@@ -92,6 +147,36 @@ const AssetDetailPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Borrow Request Dialog */}
+        <Dialog open={openBorrowDialog} onOpenChange={setOpenBorrowDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Request to Borrow</DialogTitle>
+              <DialogDescription>
+                Set when you plan to return the {asset.name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="due-date">Due Date</Label>
+                <Input
+                  id="due-date"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
+              </div>
+              <Button 
+                className="w-full" 
+                onClick={handleSubmitBorrow}
+                disabled={isBorrowing}
+              >
+                {isBorrowing ? "Submitting..." : "Submit Request"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
