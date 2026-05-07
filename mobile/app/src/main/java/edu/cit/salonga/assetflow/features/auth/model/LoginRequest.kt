@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow.models
+package edu.cit.salonga.assetflow.features.auth.model
 
 data class LoginRequest(
     val email: String,

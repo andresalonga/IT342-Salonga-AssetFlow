@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow.utils
+package edu.cit.salonga.assetflow.features.auth.utils
 
 import android.content.Context
 import android.content.SharedPreferences

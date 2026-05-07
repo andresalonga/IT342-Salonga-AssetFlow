@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow
+package edu.cit.salonga.assetflow.features.auth.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,9 +11,9 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import android.widget.Toast
-import edu.cit.salonga.assetflow.models.RegisterRequest
+import edu.cit.salonga.assetflow.features.auth.model.RegisterRequest
 import edu.cit.salonga.assetflow.network.ApiClient
-import edu.cit.salonga.assetflow.utils.TokenManager
+import edu.cit.salonga.assetflow.features.auth.utils.TokenManager
 import kotlinx.coroutines.launch
 
 class RegisterActivity : AppCompatActivity() {

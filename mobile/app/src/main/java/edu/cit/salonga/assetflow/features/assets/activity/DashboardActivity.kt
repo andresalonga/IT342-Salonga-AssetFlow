@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow
+package edu.cit.salonga.assetflow.features.assets.activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,7 +6,7 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import edu.cit.salonga.assetflow.utils.TokenManager
+import edu.cit.salonga.assetflow.features.auth.utils.TokenManager
 
 class DashboardActivity : AppCompatActivity() {
     
