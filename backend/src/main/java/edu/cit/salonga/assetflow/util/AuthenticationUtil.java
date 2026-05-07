@@ -1,7 +1,7 @@
 package edu.cit.salonga.assetflow.util;
 
-import edu.cit.salonga.assetflow.entity.User;
-import edu.cit.salonga.assetflow.repository.UserRepository;
+import edu.cit.salonga.assetflow.features.auth.entity.User;
+import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

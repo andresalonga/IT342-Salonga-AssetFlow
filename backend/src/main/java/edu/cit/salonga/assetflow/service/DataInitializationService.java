@@ -1,9 +1,9 @@
 package edu.cit.salonga.assetflow.service;
 
-import edu.cit.salonga.assetflow.entity.Asset;
-import edu.cit.salonga.assetflow.entity.Category;
-import edu.cit.salonga.assetflow.repository.AssetRepository;
-import edu.cit.salonga.assetflow.repository.CategoryRepository;
+import edu.cit.salonga.assetflow.features.assets.entity.Asset;
+import edu.cit.salonga.assetflow.features.assets.entity.Category;
+import edu.cit.salonga.assetflow.features.assets.repository.AssetRepository;
+import edu.cit.salonga.assetflow.features.assets.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;

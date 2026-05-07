@@ -1,6 +1,6 @@
-package edu.cit.salonga.assetflow.repository;
+package edu.cit.salonga.assetflow.features.assets.repository;
 
-import edu.cit.salonga.assetflow.entity.Asset;
+import edu.cit.salonga.assetflow.features.assets.entity.Asset;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

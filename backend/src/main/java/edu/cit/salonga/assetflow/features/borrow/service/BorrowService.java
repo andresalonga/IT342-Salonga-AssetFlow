@@ -1,13 +1,13 @@
-package edu.cit.salonga.assetflow.service;
+package edu.cit.salonga.assetflow.features.borrow.service;
 
-import edu.cit.salonga.assetflow.dto.BorrowRequestCreateDto;
-import edu.cit.salonga.assetflow.dto.BorrowRequestDto;
-import edu.cit.salonga.assetflow.entity.Asset;
-import edu.cit.salonga.assetflow.entity.Transaction;
-import edu.cit.salonga.assetflow.entity.User;
-import edu.cit.salonga.assetflow.repository.AssetRepository;
-import edu.cit.salonga.assetflow.repository.TransactionRepository;
-import edu.cit.salonga.assetflow.repository.UserRepository;
+import edu.cit.salonga.assetflow.features.borrow.dto.BorrowRequestCreateDto;
+import edu.cit.salonga.assetflow.features.borrow.dto.BorrowRequestDto;
+import edu.cit.salonga.assetflow.features.assets.entity.Asset;
+import edu.cit.salonga.assetflow.features.borrow.entity.Transaction;
+import edu.cit.salonga.assetflow.features.auth.entity.User;
+import edu.cit.salonga.assetflow.features.assets.repository.AssetRepository;
+import edu.cit.salonga.assetflow.features.borrow.repository.TransactionRepository;
+import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

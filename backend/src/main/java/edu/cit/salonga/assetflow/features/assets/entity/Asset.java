@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow.entity;
+package edu.cit.salonga.assetflow.features.assets.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

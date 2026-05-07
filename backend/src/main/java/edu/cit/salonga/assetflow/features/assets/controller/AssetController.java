@@ -1,8 +1,8 @@
-package edu.cit.salonga.assetflow.controller;
+package edu.cit.salonga.assetflow.features.assets.controller;
 
-import edu.cit.salonga.assetflow.dto.BorrowRequestCreateDto;
-import edu.cit.salonga.assetflow.dto.BorrowRequestDto;
-import edu.cit.salonga.assetflow.service.BorrowService;
+import edu.cit.salonga.assetflow.features.borrow.dto.BorrowRequestCreateDto;
+import edu.cit.salonga.assetflow.features.borrow.dto.BorrowRequestDto;
+import edu.cit.salonga.assetflow.features.borrow.service.BorrowService;
 import edu.cit.salonga.assetflow.util.AuthenticationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

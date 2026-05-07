@@ -1,6 +1,6 @@
-package edu.cit.salonga.assetflow.repository;
+package edu.cit.salonga.assetflow.features.borrow.repository;
 
-import edu.cit.salonga.assetflow.entity.Transaction;
+import edu.cit.salonga.assetflow.features.borrow.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

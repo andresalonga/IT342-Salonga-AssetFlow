@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow.dto;
+package edu.cit.salonga.assetflow.features.borrow.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;

@@ -1,4 +1,4 @@
-package edu.cit.salonga.assetflow.dto;
+package edu.cit.salonga.assetflow.features.borrow.dto;
 
 import java.time.LocalDate;
 

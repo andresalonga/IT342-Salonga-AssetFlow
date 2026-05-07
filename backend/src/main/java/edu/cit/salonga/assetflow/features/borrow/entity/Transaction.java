@@ -1,5 +1,7 @@
-package edu.cit.salonga.assetflow.entity;
+package edu.cit.salonga.assetflow.features.borrow.entity;
 
+import edu.cit.salonga.assetflow.features.auth.entity.User;
+import edu.cit.salonga.assetflow.features.assets.entity.Asset;
 import jakarta.persistence.*;
 import lombok.Data;
 

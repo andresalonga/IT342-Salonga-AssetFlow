@@ -1,11 +1,11 @@
-package edu.cit.salonga.assetflow.service;
+package edu.cit.salonga.assetflow.features.auth.service;
 
-import edu.cit.salonga.assetflow.dto.AuthResponse;
-import edu.cit.salonga.assetflow.dto.LoginRequest;
-import edu.cit.salonga.assetflow.dto.RegisterRequest;
-import edu.cit.salonga.assetflow.entity.Role;
-import edu.cit.salonga.assetflow.entity.User;
-import edu.cit.salonga.assetflow.repository.UserRepository;
+import edu.cit.salonga.assetflow.features.auth.dto.AuthResponse;
+import edu.cit.salonga.assetflow.features.auth.dto.LoginRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.RegisterRequest;
+import edu.cit.salonga.assetflow.features.auth.entity.Role;
+import edu.cit.salonga.assetflow.features.auth.entity.User;
+import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
 import edu.cit.salonga.assetflow.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

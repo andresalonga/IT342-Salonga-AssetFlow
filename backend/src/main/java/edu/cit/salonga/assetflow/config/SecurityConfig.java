@@ -1,6 +1,6 @@
 package edu.cit.salonga.assetflow.config;
 
-import edu.cit.salonga.assetflow.service.CustomUserDetailsService;
+import edu.cit.salonga.assetflow.features.auth.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
