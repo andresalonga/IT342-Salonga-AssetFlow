@@ -47,6 +47,10 @@ class AuthServiceTest {
     void setUp() {
         encoder = new BCryptPasswordEncoder();
         
+        // Setup flexible JWT mocking to handle both 1-param and 3-param calls
+        when(jwtUtil.generateToken(any())).thenReturn("jwt-token-123");
+        when(jwtUtil.generateToken(any(), anyLong(), anyString())).thenReturn("jwt-token-456");
+        
         registerRequest = new RegisterRequest();
         registerRequest.setEmail("student@test.edu");
         registerRequest.setPassword("SecureP@ss123");
@@ -70,7 +74,6 @@ class AuthServiceTest {
         // Arrange
         when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(jwtUtil.generateToken(any())).thenReturn("jwt-token-123");
 
         // Act
         AuthResponse response = authService.register(registerRequest);
@@ -97,7 +100,6 @@ class AuthServiceTest {
     void testLoginSuccess() {
         // Arrange
         when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(testUser));
-        when(jwtUtil.generateToken(any())).thenReturn("jwt-token-456");
 
         // Act
         AuthResponse response = authService.login(loginRequest);
@@ -140,14 +142,13 @@ class AuthServiceTest {
         // Arrange
         when(userRepository.existsByEmail(registerRequest.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(jwtUtil.generateToken(any())).thenReturn("jwt-token");
 
         // Act
         authService.register(registerRequest);
 
         // Assert
         verify(userRepository, times(1)).save(argThat(user -> 
-            !user.getPassword().equals("SecureP@ss123")  // Password should be hashed
+            !user.getPassword().equals("SecureP@ss123")  // Password should be hashed, not plain text
         ));
     }
 
@@ -161,7 +162,6 @@ class AuthServiceTest {
 
         when(userRepository.existsByEmail(adminRegister.getEmail())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(testUser);
-        when(jwtUtil.generateToken(any())).thenReturn("admin-jwt");
 
         // Act
         authService.register(adminRegister);
