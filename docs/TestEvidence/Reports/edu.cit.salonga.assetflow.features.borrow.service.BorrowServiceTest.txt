@@ -1,0 +1,85 @@
+-------------------------------------------------------------------------------
+Test set: edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 6, Errors: 0, Skipped: 0, Time elapsed: 0.245 s <<< FAILURE! -- in edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest
+edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testSubmitBorrowRequestSuccess -- Time elapsed: 0.013 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <PENDING> but was: <pending>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testSubmitBorrowRequestSuccess(BorrowServiceTest.java:95)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testSubmitBorrowAssetUnavailable -- Time elapsed: 0.023 s <<< FAILURE!
+org.mockito.exceptions.verification.NeverWantedButInvoked: 
+
+transactionRepository.save(
+    <any edu.cit.salonga.assetflow.features.borrow.entity.Transaction>
+);
+Never wanted here:
+-> at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testSubmitBorrowAssetUnavailable(BorrowServiceTest.java:111)
+But invoked here:
+-> at edu.cit.salonga.assetflow.features.borrow.service.BorrowService.submitBorrowRequest(BorrowService.java:55) with arguments: [Transaction(id=null, user=User(id=1, name=John Student, email=student@test.edu, password=null, role=USER, createdAt=null), asset=Asset(id=5, name=Microscope, serialNumber=MICRO-001, category=null, status=BORROWED, description=null, imageUrl=null, createdAt=null), requestDate=2026-05-09, dueDate=2026-05-16, returnDate=null, status=PENDING, createdAt=null)]
+
+	at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testSubmitBorrowAssetUnavailable(BorrowServiceTest.java:111)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testApproveBorrowRequest -- Time elapsed: 0.005 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <APPROVED> but was: <approved>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testApproveBorrowRequest(BorrowServiceTest.java:140)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testGetUserRequests -- Time elapsed: 0.005 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <2> but was: <0>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:145)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:531)
+	at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testGetUserRequests(BorrowServiceTest.java:196)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testRejectBorrowRequest -- Time elapsed: 0.004 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <REJECTED> but was: <rejected>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testRejectBorrowRequest(BorrowServiceTest.java:156)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testReturnAsset -- Time elapsed: 0.006 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: expected: <RETURNED> but was: <returned>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
+	at edu.cit.salonga.assetflow.features.borrow.service.BorrowServiceTest.testReturnAsset(BorrowServiceTest.java:179)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+

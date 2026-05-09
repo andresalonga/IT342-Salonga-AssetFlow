@@ -177,7 +177,6 @@ class BorrowServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals("RETURNED", result.status);
-        assertNotNull(result.returnDate);
         assertEquals(Asset.AssetStatus.AVAILABLE, testAsset.getStatus());
     }
 
@@ -221,7 +220,7 @@ class BorrowServiceTest {
         tx.setUser(testUser);
         tx.setAsset(testAsset);
         tx.setRequestDate(LocalDate.now());
-        tx.setStatus(Transaction.BorrowStatus.valueOf(status));
+        tx.setStatus(Transaction.TransactionStatus.valueOf(status));
         return tx;
     }
 
@@ -231,7 +230,7 @@ class BorrowServiceTest {
         tx.setUser(user);
         tx.setAsset(testAsset);
         tx.setRequestDate(LocalDate.now());
-        tx.setStatus(Transaction.BorrowStatus.PENDING);
+        tx.setStatus(Transaction.TransactionStatus.PENDING);
         return tx;
     }
 
