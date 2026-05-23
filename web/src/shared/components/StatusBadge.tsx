@@ -1,5 +1,5 @@
 import { AssetStatus } from "@/types";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/lib/utils";
 
 const statusConfig: Record<AssetStatus, { label: string; className: string }> = {

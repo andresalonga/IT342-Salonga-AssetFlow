@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/AppLayout";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/shared/components/AppLayout";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 import { CheckCircle, XCircle, RotateCcw } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import { borrowApi, getToken } from "@/lib/api";
 import { BorrowRequest } from "@/types";
 import { cn } from "@/lib/utils";

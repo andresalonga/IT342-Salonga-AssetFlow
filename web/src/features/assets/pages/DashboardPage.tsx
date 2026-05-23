@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 import { MOCK_ASSETS } from "@/data/mock";
-import { AssetCard } from "@/components/AssetCard";
+import { AssetCard } from "@/features/assets/components/AssetCard";
 import { AssetStatus } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppLayout } from "@/components/AppLayout";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { AppLayout } from "@/shared/components/AppLayout";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 import { Search, Package, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 

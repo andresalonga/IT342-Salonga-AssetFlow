@@ -1,6 +1,6 @@
 import { Asset } from "@/types";
-import { Card, CardContent } from "@/components/ui/card";
-import { StatusBadge } from "@/components/StatusBadge";
+import { Card, CardContent } from "@/shared/ui/card";
+import { StatusBadge } from "@/shared/components/StatusBadge";
 import { useNavigate } from "react-router-dom";
 
 export const AssetCard = ({ asset }: { asset: Asset }) => {

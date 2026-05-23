@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/AppLayout";
-import { Badge } from "@/components/ui/badge";
+import { AppLayout } from "@/shared/components/AppLayout";
+import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/lib/utils";
 import { Package, Calendar, Clock } from "lucide-react";
 import { borrowApi, getToken } from "@/lib/api";
 import { BorrowRequest } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 
 const statusStyles: Record<string, string> = {
   pending: "bg-warning/15 text-warning border-warning/30",

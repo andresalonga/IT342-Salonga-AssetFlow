@@ -2,13 +2,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { MOCK_ASSETS } from "@/data/mock";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppLayout } from "@/components/AppLayout";
-import { StatusBadge } from "@/components/StatusBadge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AppLayout } from "@/shared/components/AppLayout";
+import { StatusBadge } from "@/shared/components/StatusBadge";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { ArrowLeft, Edit, Trash2, Calendar, Tag, Hash } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/shared/hooks/use-toast";
 import { borrowApi, getToken } from "@/lib/api";
 import {
   Dialog,
@@ -16,7 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 
 const AssetDetailPage = () => {
   const { id } = useParams();
