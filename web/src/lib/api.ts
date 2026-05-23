@@ -83,8 +83,7 @@ export const removeToken = () => {
 // Borrow Request + Asset API
 const API_ASSET_URL = "http://localhost:3000/api/assets";
 
-const DEFAULT_ASSET_IMAGE =
-  "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400&h=300&fit=crop";
+const DEFAULT_ASSET_IMAGE = "/assetflow-default.svg";
 
 interface AssetDto {
   id: string;
