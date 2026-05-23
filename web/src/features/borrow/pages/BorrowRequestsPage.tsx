@@ -18,7 +18,10 @@ const statusStyles: Record<string, string> = {
 const BorrowRequestsPage = () => {
   const [requests, setRequests] = useState<BorrowRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const { toast } = useToast();
+
+  const pageSize = 10;
 
   useEffect(() => {
     const token = getToken();
@@ -52,6 +55,23 @@ const BorrowRequestsPage = () => {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(requests.length / pageSize));
+  const pagedRequests = requests.slice((page - 1) * pageSize, page * pageSize);
+
+  const pageNumbers = (() => {
+    const maxButtons = 5;
+    if (totalPages <= maxButtons) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const start = Math.max(1, Math.min(page - 2, totalPages - (maxButtons - 1)));
+    return Array.from({ length: maxButtons }, (_, i) => start + i);
+  })();
+
+  useEffect(() => {
+    setPage(1);
+  }, [requests.length]);
+
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-6xl mx-auto space-y-6 animate-fade-in">
@@ -83,7 +103,7 @@ const BorrowRequestsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.map((r) => (
+                  {pagedRequests.map((r) => (
                     <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
                       <td className="p-4 font-medium">{r.userName}</td>
                       <td className="p-4">{r.assetName}</td>
@@ -118,6 +138,41 @@ const BorrowRequestsPage = () => {
                 </tbody>
               </table>
             </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between p-4 border-t bg-muted/30">
+                <p className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  {pageNumbers.map((pageNumber) => (
+                    <Button
+                      key={pageNumber}
+                      variant={pageNumber === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

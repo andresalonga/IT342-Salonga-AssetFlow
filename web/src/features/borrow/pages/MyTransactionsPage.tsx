@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/shared/components/AppLayout";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import { cn } from "@/lib/utils";
 import { Package, Calendar, Clock } from "lucide-react";
 import { borrowApi, getToken } from "@/lib/api";
@@ -17,7 +18,10 @@ const statusStyles: Record<string, string> = {
 const MyTransactionsPage = () => {
   const [myRequests, setMyRequests] = useState<BorrowRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
   const { toast } = useToast();
+
+  const pageSize = 6;
 
   useEffect(() => {
     const token = getToken();
@@ -51,6 +55,23 @@ const MyTransactionsPage = () => {
     loadMyRequests();
   }, [toast]);
 
+  const totalPages = Math.max(1, Math.ceil(myRequests.length / pageSize));
+  const pagedRequests = myRequests.slice((page - 1) * pageSize, page * pageSize);
+
+  const pageNumbers = (() => {
+    const maxButtons = 5;
+    if (totalPages <= maxButtons) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    const start = Math.max(1, Math.min(page - 2, totalPages - (maxButtons - 1)));
+    return Array.from({ length: maxButtons }, (_, i) => start + i);
+  })();
+
+  useEffect(() => {
+    setPage(1);
+  }, [myRequests.length]);
+
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-4xl mx-auto space-y-6 animate-fade-in">
@@ -70,8 +91,9 @@ const MyTransactionsPage = () => {
             <p className="text-sm">Browse the inventory to submit a borrow request.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {myRequests.map((r) => (
+          <>
+            <div className="space-y-3">
+              {pagedRequests.map((r) => (
               <div key={r.id} className="bg-card rounded-xl border p-4 flex items-center gap-4 hover:shadow-sm transition-shadow">
                 <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
                   <Package className="h-5 w-5 text-muted-foreground" />
@@ -91,8 +113,44 @@ const MyTransactionsPage = () => {
                   {r.status}
                 </Badge>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Page {page} of {totalPages}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Previous
+                  </Button>
+                  {pageNumbers.map((pageNumber) => (
+                    <Button
+                      key={pageNumber}
+                      variant={pageNumber === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </Button>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppLayout>
