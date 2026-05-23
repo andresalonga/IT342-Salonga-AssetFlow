@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { MOCK_ASSETS } from "@/data/mock";
+import { useEffect, useMemo, useState } from "react";
+import { Asset } from "@/types";
 import { AssetCard } from "@/features/assets/components/AssetCard";
 import { AssetStatus } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,8 @@ import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { Search, Package, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { assetApi, getToken } from "@/lib/api";
+import { useToast } from "@/shared/hooks/use-toast";
 
 const statusFilters: { value: AssetStatus | "all"; label: string; icon: React.ElementType }[] = [
   { value: "all", label: "All", icon: Package },
@@ -19,24 +21,57 @@ const statusFilters: { value: AssetStatus | "all"; label: string; icon: React.El
 const DashboardPage = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<AssetStatus | "all">("all");
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user, isAdmin } = useAuth();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    let active = true;
+    const loadAssets = async () => {
+      try {
+        const token = getToken();
+        const data = await assetApi.getAll(token || undefined);
+        if (active) {
+          setAssets(data);
+        }
+      } catch (error) {
+        if (active) {
+          toast({
+            title: "Failed to load assets",
+            description: "Please check your connection and try again.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadAssets();
+    return () => {
+      active = false;
+    };
+  }, [toast]);
 
   const filtered = useMemo(() => {
-    return MOCK_ASSETS.filter((a) => {
+    return assets.filter((a) => {
       const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase()) ||
         a.serialNumber.toLowerCase().includes(search.toLowerCase()) ||
         a.category.toLowerCase().includes(search.toLowerCase());
       const matchesStatus = statusFilter === "all" || a.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [search, statusFilter]);
+  }, [assets, search, statusFilter]);
 
   const stats = useMemo(() => ({
-    total: MOCK_ASSETS.length,
-    available: MOCK_ASSETS.filter((a) => a.status === "available").length,
-    borrowed: MOCK_ASSETS.filter((a) => a.status === "borrowed").length,
-    maintenance: MOCK_ASSETS.filter((a) => a.status === "maintenance").length,
-  }), []);
+    total: assets.length,
+    available: assets.filter((a) => a.status === "available").length,
+    borrowed: assets.filter((a) => a.status === "borrowed").length,
+    maintenance: assets.filter((a) => a.status === "maintenance").length,
+  }), [assets]);
 
   return (
     <AppLayout>
@@ -97,7 +132,12 @@ const DashboardPage = () => {
         </div>
 
         {/* Grid */}
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-16 text-muted-foreground animate-fade-in">
+            <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <p className="font-medium">Loading assets...</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground animate-fade-in">
             <Package className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p className="font-medium">No assets found</p>

@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { MOCK_ASSETS } from "@/data/mock";
+import { useEffect, useState } from "react";
+import { Asset } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/shared/components/AppLayout";
 import { StatusBadge } from "@/shared/components/StatusBadge";
@@ -9,7 +9,7 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { ArrowLeft, Edit, Trash2, Calendar, Tag, Hash } from "lucide-react";
 import { useToast } from "@/shared/hooks/use-toast";
-import { borrowApi, getToken } from "@/lib/api";
+import { assetApi, borrowApi, getToken } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -21,12 +21,57 @@ import {
 const AssetDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAdmin, isStudent, user } = useAuth();
+  const { isAdmin, isStudent } = useAuth();
   const { toast } = useToast();
   const [openBorrowDialog, setOpenBorrowDialog] = useState(false);
   const [dueDate, setDueDate] = useState("");
   const [isBorrowing, setIsBorrowing] = useState(false);
-  const asset = MOCK_ASSETS.find((a) => a.id === id);
+  const [asset, setAsset] = useState<Asset | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    let active = true;
+    const loadAsset = async () => {
+      try {
+        const token = getToken();
+        const data = await assetApi.getById(id, token || undefined);
+        if (active) {
+          setAsset(data);
+        }
+      } catch (error) {
+        if (active) {
+          toast({
+            title: "Asset not found",
+            description: "Please select another asset.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadAsset();
+    return () => {
+      active = false;
+    };
+  }, [id, toast]);
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-full">
+          <p className="text-muted-foreground">Loading asset...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!asset) {
     return (
@@ -136,10 +181,24 @@ const AssetDetailPage = () => {
                   <Button variant="outline" className="gap-2" onClick={() => navigate(`/assets/edit/${asset.id}`)}>
                     <Edit className="h-4 w-4" /> Edit
                   </Button>
-                  <Button variant="outline" className="gap-2 text-destructive hover:text-destructive" onClick={() => {
-                    toast({ title: "Asset deleted", variant: "destructive" });
-                    navigate("/dashboard");
-                  }}>
+                  <Button
+                    variant="outline"
+                    className="gap-2 text-destructive hover:text-destructive"
+                    onClick={async () => {
+                      try {
+                        const token = getToken();
+                        await assetApi.delete(asset.id, token || undefined);
+                        toast({ title: "Asset deleted", variant: "destructive" });
+                        navigate("/dashboard");
+                      } catch (error) {
+                        toast({
+                          title: "Delete failed",
+                          description: "Please try again.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
                     <Trash2 className="h-4 w-4" /> Delete
                   </Button>
                 </>
