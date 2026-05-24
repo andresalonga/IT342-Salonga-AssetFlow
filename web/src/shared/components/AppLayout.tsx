@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -12,6 +12,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { cn } from "@/lib/utils";
 import { UserRole } from "@/types";
 
@@ -38,6 +39,7 @@ export const AppLayout = ({ children }: { children: ReactNode }) => {
   const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   if (!user) return null;
 
@@ -61,7 +63,15 @@ export const AppLayout = ({ children }: { children: ReactNode }) => {
               <Package className="h-4.5 w-4.5 text-sidebar-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-base font-bold tracking-tight">AssetFlow</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold tracking-tight">AssetFlow</h1>
+                {user.role === "admin" && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-sidebar-accent px-2 py-0.5 text-[10px] font-medium text-sidebar-accent-foreground capitalize">
+                    {roleIcons[user.role]}
+                    Admin
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-sidebar-muted uppercase tracking-widest">Inventory System</p>
             </div>
           </div>
@@ -91,21 +101,18 @@ export const AppLayout = ({ children }: { children: ReactNode }) => {
         {/* User info and logout */}
         <div className="p-3 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-medium">
-              {user.firstName?.[0] || "U"}{user.lastName?.[0] || ""}
+            <div className="h-8 w-8 rounded-full bg-sidebar-accent flex items-center justify-center text-xs font-medium overflow-hidden">
+              <span>{user.firstName?.[0] || "U"}{user.lastName?.[0] || ""}</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{user.firstName} {user.lastName}</p>
-              <div className="flex items-center gap-1 text-[10px] text-sidebar-muted">
-                {roleIcons[user.role] || roleIcons.student}
-                <span className="capitalize">{user.role?.replace("_", " ") || "User"}</span>
-              </div>
+              <p className="text-[10px] text-sidebar-muted truncate">{user.email}</p>
             </div>
             <Button
               variant="ghost"
               size="icon"
               className="h-7 w-7 text-sidebar-muted hover:text-sidebar-foreground"
-              onClick={handleLogout}
+              onClick={() => setLogoutOpen(true)}
               title="Logout"
             >
               <LogOut className="h-3.5 w-3.5" />
@@ -118,6 +125,31 @@ export const AppLayout = ({ children }: { children: ReactNode }) => {
       <main className="flex-1 overflow-auto">
         {children}
       </main>
+
+      <Dialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log out?</DialogTitle>
+            <DialogDescription>
+              You will need to sign in again to access your account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setLogoutOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setLogoutOpen(false);
+                handleLogout();
+              }}
+            >
+              Log out
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
