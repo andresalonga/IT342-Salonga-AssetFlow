@@ -8,11 +8,16 @@ import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
 import edu.cit.salonga.assetflow.features.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLEncoder;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,5 +87,68 @@ public class AuthController {
         response.put("message", "Logout successful");
         response.put("note", "Please remove the token from client storage");
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/google/login")
+    public ResponseEntity<Void> googleLogin() {
+        String url = authService.buildGoogleLoginUrl();
+        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build();
+    }
+
+    @GetMapping("/google/callback")
+    public ResponseEntity<Void> googleCallback(
+            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String error) {
+        if (error != null) {
+            URI errorRedirect = URI.create(buildRedirectUrl(Map.of("error", error)));
+            return ResponseEntity.status(HttpStatus.FOUND).location(errorRedirect).build();
+        }
+
+        if (code == null || code.isBlank()) {
+            URI errorRedirect = URI.create(buildRedirectUrl(Map.of("error", "Missing authorization code")));
+            return ResponseEntity.status(HttpStatus.FOUND).location(errorRedirect).build();
+        }
+
+        AuthResponse response = authService.handleGoogleCallback(code);
+        if (!response.isSuccess()) {
+            URI errorRedirect = URI.create(buildRedirectUrl(Map.of("error", response.getMessage())));
+            return ResponseEntity.status(HttpStatus.FOUND).location(errorRedirect).build();
+        }
+
+        URI redirect = URI.create(buildRedirectUrl(Map.of(
+                "token", response.getToken(),
+                "userId", String.valueOf(response.getUserId()),
+                "name", response.getName(),
+                "email", response.getEmail(),
+                "role", response.getRole()
+        )));
+
+        return ResponseEntity.status(HttpStatus.FOUND).location(redirect).build();
+    }
+
+    private String buildRedirectUrl(Map<String, String> params) {
+        String base = UriComponentsBuilder.fromUriString(authService.getFrontendRedirectUri())
+                .build()
+                .toUriString();
+
+        StringBuilder query = new StringBuilder();
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
+            if (query.length() > 0) {
+                query.append("&");
+            }
+            query.append(URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8));
+            query.append("=");
+            query.append(URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8));
+        }
+
+        if (query.length() == 0) {
+            return base;
+        }
+
+        String separator = base.contains("?") ? "&" : "?";
+        return base + separator + query;
     }
 }

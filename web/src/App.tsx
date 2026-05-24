@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import LoginPage from "@/features/auth/pages/LoginPage";
 import RegisterPage from "@/features/auth/pages/RegisterPage";
+import OAuthCallbackPage from "@/features/auth/pages/OAuthCallbackPage";
 import DashboardPage from "@/features/assets/pages/DashboardPage";
 import AssetDetailPage from "@/features/assets/pages/AssetDetailPage";
 import BorrowRequestsPage from "@/features/borrow/pages/BorrowRequestsPage";
@@ -29,6 +30,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/assets/:id" element={<ProtectedRoute><AssetDetailPage /></ProtectedRoute>} />
       <Route path="/assets/new" element={<ProtectedRoute adminOnly><AddAssetPage /></ProtectedRoute>} />

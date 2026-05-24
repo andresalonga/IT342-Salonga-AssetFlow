@@ -24,6 +24,9 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    @Column(name = "google_id", unique = true)
+    private String googleId;
+
     private String password;
 
     @Enumerated(EnumType.STRING)
