@@ -83,17 +83,29 @@ const AssetDetailPage = () => {
     );
   }
 
+  const formatDate = (date: Date) => date.toISOString().split("T")[0];
+  const today = new Date();
+  const minDueDate = formatDate(today);
+  const maxDueDate = formatDate(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7));
+
   const handleBorrowClick = () => {
-    // Set default due date to 2 weeks from today
-    const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 14);
-    setDueDate(defaultDate.toISOString().split("T")[0]);
+    const defaultDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
+    setDueDate(formatDate(defaultDate));
     setOpenBorrowDialog(true);
   };
 
   const handleSubmitBorrow = async () => {
     if (!dueDate) {
       toast({ title: "Error", description: "Please select a due date", variant: "destructive" });
+      return;
+    }
+
+    if (dueDate < minDueDate || dueDate > maxDueDate) {
+      toast({
+        title: "Invalid due date",
+        description: "Due date must be today or within the next 7 days.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -224,6 +236,8 @@ const AssetDetailPage = () => {
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
+                  min={minDueDate}
+                  max={maxDueDate}
                 />
               </div>
               <Button 
