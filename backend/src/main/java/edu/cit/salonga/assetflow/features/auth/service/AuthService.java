@@ -5,10 +5,14 @@ import edu.cit.salonga.assetflow.features.auth.dto.GoogleTokenResponse;
 import edu.cit.salonga.assetflow.features.auth.dto.GoogleUserInfo;
 import edu.cit.salonga.assetflow.features.auth.dto.LoginRequest;
 import edu.cit.salonga.assetflow.features.auth.dto.RegisterRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.UpdateProfileRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.UserDto;
 import edu.cit.salonga.assetflow.features.auth.entity.Role;
 import edu.cit.salonga.assetflow.features.auth.entity.User;
 import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
+import edu.cit.salonga.assetflow.features.notification.service.EmailService;
 import edu.cit.salonga.assetflow.util.JwtUtil;
+import edu.cit.salonga.assetflow.util.AuthenticationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -17,7 +21,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -28,6 +40,12 @@ public class AuthService {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuthenticationUtil authenticationUtil;
+
+    @Autowired
+    private EmailService emailService;
 
     @Value("${google.oauth.client-id}")
     private String googleClientId;
@@ -41,8 +59,14 @@ public class AuthService {
     @Value("${google.oauth.frontend-redirect}")
     private String googleFrontendRedirect;
 
+    @Value("${assetflow.avatar-upload-dir:uploads/avatars}")
+    private String avatarUploadDir;
+
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final RestTemplate restTemplate = new RestTemplate();
+
+    private static final long MAX_UPLOAD_BYTES = 1_048_576; // 1MB
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/png", "image/jpeg");
 
     public AuthResponse register(RegisterRequest request) {
         // Check if email already exists
@@ -67,6 +91,8 @@ public class AuthService {
 
         // Save user to database
         User savedUser = userRepository.save(user);
+
+        emailService.sendWelcomeEmail(savedUser);
 
         // Generate JWT token
         String token = jwtUtil.generateToken(savedUser, savedUser.getId(), savedUser.getRole().name());
@@ -108,6 +134,69 @@ public class AuthService {
             true
         );
     }
+
+    public UserDto updateProfile(UpdateProfileRequest request) {
+        if (request == null) {
+            throw new RuntimeException("Invalid request");
+        }
+
+        String email = authenticationUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String newEmail = request.getEmail().trim();
+            if (!newEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+                throw new RuntimeException("Email already registered");
+            }
+            user.setEmail(newEmail);
+        }
+
+        User saved = userRepository.save(user);
+        return toDto(saved);
+    }
+
+    public Map<String, String> uploadAvatar(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("File is required");
+        }
+
+        if (file.getSize() > MAX_UPLOAD_BYTES) {
+            throw new RuntimeException("File exceeds 1MB limit");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw new RuntimeException("Only PNG and JPG files are allowed");
+        }
+
+        String extension = contentType.equals("image/png") ? ".png" : ".jpg";
+        String filename = UUID.randomUUID() + extension;
+
+        Path uploadPath = Paths.get(avatarUploadDir).toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+
+        Path destination = uploadPath.resolve(filename).normalize();
+        file.transferTo(destination);
+
+        String url = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/uploads/avatars/")
+                .path(filename)
+                .toUriString();
+
+        String email = authenticationUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAvatarUrl(url);
+        userRepository.save(user);
+
+        return Map.of("avatarUrl", url);
+    }
+
 
     public String buildGoogleLoginUrl() {
         if (googleClientId == null || googleClientId.isBlank()) {
@@ -209,5 +298,16 @@ public class AuthService {
         }
 
         return response.getBody();
+    }
+
+    private UserDto toDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name(),
+                user.getAvatarUrl(),
+                user.getCreatedAt()
+        );
     }
 }

@@ -8,6 +8,7 @@ import edu.cit.salonga.assetflow.features.auth.entity.User;
 import edu.cit.salonga.assetflow.features.assets.repository.AssetRepository;
 import edu.cit.salonga.assetflow.features.borrow.repository.TransactionRepository;
 import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
+import edu.cit.salonga.assetflow.features.notification.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +30,25 @@ public class BorrowService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
+    private static final int REJECTION_NOTE_MIN = 10;
+    private static final int REJECTION_NOTE_MAX = 200;
+
     // Submit a borrow request
     public BorrowRequestDto submitBorrowRequest(Long userId, Long assetId, BorrowRequestCreateDto request) {
         System.out.println("📝 Submitting borrow request for user=" + userId + ", asset=" + assetId + ", dueDate=" + request.dueDate);
+
+        if (request.dueDate == null) {
+            throw new RuntimeException("Due date is required");
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate maxDueDate = today.plusDays(7);
+        if (request.dueDate.isBefore(today) || request.dueDate.isAfter(maxDueDate)) {
+            throw new RuntimeException("Due date must be between today and the next 7 days");
+        }
         
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -91,7 +108,7 @@ public class BorrowService {
     }
 
     // Update request status
-    public BorrowRequestDto updateRequestStatus(Long requestId, String status) {
+    public BorrowRequestDto updateRequestStatus(Long requestId, String status, String rejectionNote) {
         System.out.println("🔄 Updating request " + requestId + " to status: " + status);
         
         Transaction transaction = transactionRepository.findById(requestId)
@@ -102,15 +119,31 @@ public class BorrowService {
 
         Transaction.TransactionStatus newStatus = Transaction.TransactionStatus.valueOf(status.toUpperCase());
         transaction.setStatus(newStatus);
+        transaction.setStatusUpdatedAt(java.time.LocalDateTime.now());
 
         if (newStatus == Transaction.TransactionStatus.APPROVED) {
             transaction.getAsset().setStatus(Asset.AssetStatus.BORROWED);
             assetRepository.save(transaction.getAsset());
+            emailService.sendBorrowApprovedEmail(transaction.getUser(), transaction.getAsset(), transaction.getDueDate());
             System.out.println("✅ Asset marked as BORROWED");
+        } else if (newStatus == Transaction.TransactionStatus.REJECTED) {
+            if (rejectionNote == null || rejectionNote.isBlank()) {
+                throw new RuntimeException("Rejection note is required");
+            }
+            String trimmedNote = rejectionNote.trim();
+            if (trimmedNote.length() < REJECTION_NOTE_MIN) {
+                throw new RuntimeException("Rejection note must be at least " + REJECTION_NOTE_MIN + " characters");
+            }
+            if (trimmedNote.length() > REJECTION_NOTE_MAX) {
+                throw new RuntimeException("Rejection note must be " + REJECTION_NOTE_MAX + " characters or less");
+            }
+            transaction.setRejectionNote(trimmedNote);
+            emailService.sendBorrowRejectedEmail(transaction.getUser(), transaction.getAsset(), rejectionNote);
         } else if (newStatus == Transaction.TransactionStatus.RETURNED) {
             transaction.setReturnDate(LocalDate.now());
             transaction.getAsset().setStatus(Asset.AssetStatus.AVAILABLE);
             assetRepository.save(transaction.getAsset());
+            emailService.sendAssetReturnedEmail(transaction.getUser(), transaction.getAsset(), transaction.getReturnDate());
             System.out.println("✅ Asset marked as AVAILABLE and return date set");
         }
 
@@ -125,11 +158,15 @@ public class BorrowService {
                 transaction.getId(),
                 transaction.getUser().getId(),
                 transaction.getUser().getName(),
+                transaction.getUser().getEmail(),
                 transaction.getAsset().getId(),
                 transaction.getAsset().getName(),
                 transaction.getRequestDate(),
                 transaction.getDueDate(),
-                transaction.getStatus().toString().toLowerCase()
+                transaction.getStatus().toString().toLowerCase(),
+                transaction.getCreatedAt() != null ? transaction.getCreatedAt().toString() : null,
+                transaction.getStatusUpdatedAt() != null ? transaction.getStatusUpdatedAt().toString() : null,
+                transaction.getRejectionNote()
         );
     }
 }

@@ -204,7 +204,8 @@ public class AssetController {
             System.out.println("🔵 [AssetController] PATCH /assets/borrow-requests/" + requestId);
             
             String status = request.get("status");
-            BorrowRequestDto result = borrowService.updateRequestStatus(requestId, status);
+            String note = request.get("note");
+            BorrowRequestDto result = borrowService.updateRequestStatus(requestId, status, note);
             
             System.out.println("✅ [AssetController] Request updated successfully");
             return ResponseEntity.ok(result);

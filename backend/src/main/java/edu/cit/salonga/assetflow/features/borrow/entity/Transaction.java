@@ -34,11 +34,17 @@ public class Transaction {
     @Column(name = "return_date")
     private LocalDate returnDate;
 
+    @Column(name = "rejection_note", length = 500)
+    private String rejectionNote;
+
     @Enumerated(EnumType.STRING)
     private TransactionStatus status = TransactionStatus.PENDING;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "status_updated_at")
+    private LocalDateTime statusUpdatedAt;
 
     @PrePersist
     protected void onCreate() {
@@ -46,6 +52,7 @@ public class Transaction {
             requestDate = LocalDate.now();
         }
         createdAt = LocalDateTime.now();
+        statusUpdatedAt = createdAt;
     }
 
     public enum TransactionStatus {

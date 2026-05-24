@@ -9,6 +9,7 @@ import edu.cit.salonga.assetflow.features.borrow.dto.BorrowRequestCreateDto;
 import edu.cit.salonga.assetflow.features.borrow.dto.BorrowRequestDto;
 import edu.cit.salonga.assetflow.features.borrow.entity.Transaction;
 import edu.cit.salonga.assetflow.features.borrow.repository.TransactionRepository;
+import edu.cit.salonga.assetflow.features.notification.service.EmailService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +45,9 @@ class BorrowServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private BorrowService borrowService;
@@ -122,6 +126,20 @@ class BorrowServiceTest {
         assertThrows(RuntimeException.class, () -> 
             borrowService.submitBorrowRequest(1L, 5L, createDto),
             "Should throw exception for past due date"
+        );
+    }
+
+    @Test
+    void testSubmitBorrowDueDateBeyondMax() {
+        // Arrange
+        createDto.dueDate = LocalDate.now().plusDays(8); // Beyond max
+        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+        when(assetRepository.findById(5L)).thenReturn(Optional.of(testAsset));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () ->
+            borrowService.submitBorrowRequest(1L, 5L, createDto),
+            "Should throw exception when due date is beyond 7 days"
         );
     }
 
