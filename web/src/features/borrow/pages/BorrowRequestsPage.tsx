@@ -54,6 +54,14 @@ const BorrowRequestsPage = () => {
     };
 
     loadRequests();
+
+    const intervalId = window.setInterval(() => {
+      loadRequests();
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [toast]);
 
   const updateStatus = async (id: string, status: "approved" | "rejected" | "returned", note?: string) => {

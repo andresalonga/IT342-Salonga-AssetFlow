@@ -54,8 +54,12 @@ const DashboardPage = () => {
     };
 
     loadAssets();
+    const intervalId = window.setInterval(() => {
+      loadAssets();
+    }, 5000);
     return () => {
       active = false;
+      window.clearInterval(intervalId);
     };
   }, [toast]);
 

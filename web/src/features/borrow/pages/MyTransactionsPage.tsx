@@ -57,6 +57,14 @@ const MyTransactionsPage = () => {
     };
 
     loadMyRequests();
+
+    const intervalId = window.setInterval(() => {
+      loadMyRequests();
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [toast]);
 
   const filteredRequests = myRequests.filter((r) => {
