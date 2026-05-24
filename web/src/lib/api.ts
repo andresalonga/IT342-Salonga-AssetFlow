@@ -24,6 +24,7 @@ interface LoginData {
   password: string;
 }
 
+
 export const authApi = {
   register: async (data: RegisterData): Promise<AuthResponse> => {
     const response = await fetch(`${API_BASE_URL}/register`, {
@@ -67,6 +68,7 @@ export const authApi = {
     return response.json();
   },
 };
+
 
 export const saveToken = (token: string) => {
   localStorage.setItem("token", token);
@@ -123,11 +125,15 @@ interface BorrowRequestResponse {
   id: string;
   userId: string;
   userName: string;
+  userEmail?: string;
   assetId: string;
   assetName: string;
   requestDate: string;
   dueDate: string;
   status: "pending" | "approved" | "rejected" | "returned";
+  requestDateTime?: string;
+  statusUpdatedAt?: string;
+  rejectionNote?: string;
 }
 
 // Initialize default borrow requests from mock data
@@ -337,7 +343,7 @@ export const borrowApi = {
     }
   },
 
-  updateStatus: async (id: string, status: "approved" | "rejected" | "returned", token: string) => {
+  updateStatus: async (id: string, status: "approved" | "rejected" | "returned", token: string, note?: string) => {
     try {
       // Try calling backend API first
       const response = await fetch(`${API_ASSET_URL}/borrow-requests/${id}`, {
@@ -346,7 +352,7 @@ export const borrowApi = {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, note }),
       });
       
       if (response.ok) {
@@ -356,12 +362,12 @@ export const borrowApi = {
       } else {
         console.error("Backend error:", response.status);
         // Fallback to localStorage
-        return updateBorrowRequestLocal(id, status);
+        return updateBorrowRequestLocal(id, status, note);
       }
     } catch (error) {
       console.log("Backend not available, updating localStorage:", error);
       // Fallback: use localStorage
-      return updateBorrowRequestLocal(id, status);
+      return updateBorrowRequestLocal(id, status, note);
     }
   },
 };
@@ -402,12 +408,19 @@ const getBorrowRequestsLocal = (): BorrowRequestResponse[] => {
   return requests;
 };
 
-const updateBorrowRequestLocal = (id: string, status: "approved" | "rejected" | "returned"): BorrowRequestResponse | null => {
+const updateBorrowRequestLocal = (
+  id: string,
+  status: "approved" | "rejected" | "returned",
+  note?: string,
+): BorrowRequestResponse | null => {
   const requests = getBorrowRequestsLocal();
   const request = requests.find((r) => r.id === id);
   
   if (request) {
     request.status = status;
+    if (status === "rejected") {
+      request.rejectionNote = note || "";
+    }
     localStorage.setItem("borrowRequests", JSON.stringify(requests));
     console.log("Borrow request updated in localStorage:", request);
   }

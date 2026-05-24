@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/shared/components/AppLayout";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/lib/utils";
 import { Package, Calendar, Clock } from "lucide-react";
 import { borrowApi, getToken } from "@/lib/api";
@@ -19,6 +21,8 @@ const MyTransactionsPage = () => {
   const [myRequests, setMyRequests] = useState<BorrowRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sortOrder, setSortOrder] = useState("newest");
   const { toast } = useToast();
 
   const pageSize = 6;
@@ -55,8 +59,30 @@ const MyTransactionsPage = () => {
     loadMyRequests();
   }, [toast]);
 
-  const totalPages = Math.max(1, Math.ceil(myRequests.length / pageSize));
-  const pagedRequests = myRequests.slice((page - 1) * pageSize, page * pageSize);
+  const filteredRequests = myRequests.filter((r) => {
+    const haystack = [
+      r.assetName,
+      r.status,
+      r.requestDate,
+      r.dueDate,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(search.toLowerCase());
+  });
+
+  const sortedRequests = [...filteredRequests].sort((a, b) => {
+    const aTime = new Date(a.requestDateTime || a.requestDate || 0).getTime();
+    const bTime = new Date(b.requestDateTime || b.requestDate || 0).getTime();
+    if (sortOrder === "oldest") {
+      return aTime - bTime;
+    }
+    return bTime - aTime;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(sortedRequests.length / pageSize));
+  const pagedRequests = sortedRequests.slice((page - 1) * pageSize, page * pageSize);
 
   const pageNumbers = (() => {
     const maxButtons = 5;
@@ -70,7 +96,28 @@ const MyTransactionsPage = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [myRequests.length]);
+  }, [myRequests.length, search, sortOrder]);
+
+  const formatPst = (value?: string) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat("en-PH", {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Manila",
+    }).format(date);
+  };
+
+  const formatPstDate = (value?: string) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return new Intl.DateTimeFormat("en-PH", {
+      dateStyle: "medium",
+      timeZone: "Asia/Manila",
+    }).format(date);
+  };
 
   return (
     <AppLayout>
@@ -92,6 +139,27 @@ const MyTransactionsPage = () => {
           </div>
         ) : (
           <>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Input
+                placeholder="Search by asset, status, or date..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger className="w-full sm:w-56">
+                  <SelectValue placeholder="Sort" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest to Oldest</SelectItem>
+                  <SelectItem value="oldest">Oldest to Newest</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {sortedRequests.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p className="font-medium">No matching transactions found</p>
+              </div>
+            ) : (
             <div className="space-y-3">
               {pagedRequests.map((r) => (
               <div key={r.id} className="bg-card rounded-xl border p-4 flex items-center gap-4 hover:shadow-sm transition-shadow">
@@ -102,19 +170,28 @@ const MyTransactionsPage = () => {
                   <p className="font-medium text-sm">{r.assetName}</p>
                   <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> Requested: {r.requestDate}
+                      <Calendar className="h-3 w-3" /> Requested: {formatPst(r.requestDateTime || r.requestDate)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> Due: {r.dueDate}
+                      <Clock className="h-3 w-3" /> Due: {formatPstDate(r.dueDate)}
                     </span>
                   </div>
+                  {r.status === "rejected" && r.rejectionNote && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Note: {r.rejectionNote}
+                    </div>
+                  )}
                 </div>
-                <Badge variant="outline" className={cn("text-xs capitalize shrink-0", statusStyles[r.status])}>
-                  {r.status}
-                </Badge>
+                <div className="flex flex-col items-end gap-1">
+                  <Badge variant="outline" className={cn("text-xs capitalize shrink-0", statusStyles[r.status])}>
+                    {r.status}
+                  </Badge>
+                  <span className="text-[10px] text-muted-foreground">{formatPst(r.statusUpdatedAt)}</span>
+                </div>
               </div>
               ))}
             </div>
+            )}
             {totalPages > 1 && (
               <div className="flex items-center justify-between pt-4">
                 <p className="text-sm text-muted-foreground">
