@@ -27,6 +27,9 @@ public class User implements UserDetails {
     @Column(name = "google_id", unique = true)
     private String googleId;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     private String password;
 
     @Enumerated(EnumType.STRING)

@@ -3,6 +3,8 @@ package edu.cit.salonga.assetflow.features.auth.controller;
 import edu.cit.salonga.assetflow.features.auth.dto.AuthResponse;
 import edu.cit.salonga.assetflow.features.auth.dto.LoginRequest;
 import edu.cit.salonga.assetflow.features.auth.dto.RegisterRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.UpdateProfileRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.UserDto;
 import edu.cit.salonga.assetflow.features.auth.entity.User;
 import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
 import edu.cit.salonga.assetflow.features.auth.service.AuthService;
@@ -14,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLEncoder;
 import java.net.URI;
@@ -75,9 +78,31 @@ public class AuthController {
         userData.put("email", user.getEmail());
         userData.put("role", user.getRole().name());
         userData.put("createdAt", user.getCreatedAt());
+        userData.put("avatarUrl", user.getAvatarUrl());
         
         return ResponseEntity.ok(userData);
     }
+
+    @PutMapping("/me")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        try {
+            UserDto updated = authService.updateProfile(request);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/me/avatar")
+    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        try {
+            Map<String, String> result = authService.uploadAvatar(file);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
 
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout() {
