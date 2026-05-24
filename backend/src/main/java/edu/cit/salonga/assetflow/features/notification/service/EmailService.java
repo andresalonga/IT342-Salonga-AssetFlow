@@ -2,6 +2,7 @@ package edu.cit.salonga.assetflow.features.notification.service;
 
 import edu.cit.salonga.assetflow.features.assets.entity.Asset;
 import edu.cit.salonga.assetflow.features.auth.entity.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,6 +14,9 @@ import java.time.LocalDate;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Value("${spring.mail.from:}")
     private String fromAddress;
@@ -31,6 +35,7 @@ public class EmailService {
                 "You can now sign in and start browsing assets and borrow what you need.\n\n" +
                 "Thanks,\nAssetFlow";
         sendEmail(user.getEmail(), subject, body);
+        notificationService.createNotification(user, "welcome", "Welcome to AssetFlow! Your account is ready.");
     }
 
     public void sendBorrowApprovedEmail(User user, Asset asset, LocalDate dueDate) {
@@ -42,6 +47,7 @@ public class EmailService {
                 "Please return the asset on or before the due date.\n\n" +
                 "Thanks,\nAssetFlow";
         sendEmail(user.getEmail(), subject, body);
+        notificationService.createNotification(user, "borrow_approved", "Your borrow request was approved for " + asset.getName() + ".");
     }
 
     public void sendBorrowRejectedEmail(User user, Asset asset, String note) {
@@ -53,6 +59,7 @@ public class EmailService {
                 "If you have questions, please contact the admin.\n\n" +
                 "Thanks,\nAssetFlow";
         sendEmail(user.getEmail(), subject, body);
+        notificationService.createNotification(user, "borrow_rejected", "Your borrow request was rejected for " + asset.getName() + ".");
     }
 
     public void sendAssetReturnedEmail(User user, Asset asset, LocalDate returnDate) {
@@ -63,6 +70,7 @@ public class EmailService {
                 "Return date: " + (returnDate != null ? returnDate : "-") + "\n\n" +
                 "Thanks for using AssetFlow!\n\n";
         sendEmail(user.getEmail(), subject, body);
+        notificationService.createNotification(user, "asset_returned", "Return recorded for " + asset.getName() + ".");
     }
 
     private void sendEmail(String to, String subject, String body) {
