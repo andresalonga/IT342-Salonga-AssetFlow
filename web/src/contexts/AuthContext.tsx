@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
+
   const isAdmin = user?.role === "admin";
   const isStudent = user?.role === "student";
 
