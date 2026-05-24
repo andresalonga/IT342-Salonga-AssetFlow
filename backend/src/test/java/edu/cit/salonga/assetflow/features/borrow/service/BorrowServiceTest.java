@@ -151,7 +151,7 @@ class BorrowServiceTest {
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
 
         // Act
-        BorrowRequestDto result = borrowService.updateRequestStatus(10L, "APPROVED");
+        BorrowRequestDto result = borrowService.updateRequestStatus(10L, "APPROVED", null);
 
         // Assert
         assertNotNull(result);
@@ -167,7 +167,7 @@ class BorrowServiceTest {
         when(transactionRepository.save(any(Transaction.class))).thenReturn(testTransaction);
 
         // Act
-        BorrowRequestDto result = borrowService.updateRequestStatus(10L, "REJECTED");
+        BorrowRequestDto result = borrowService.updateRequestStatus(10L, "REJECTED", "Not available");
 
         // Assert
         assertNotNull(result);
@@ -190,7 +190,7 @@ class BorrowServiceTest {
         });
 
         // Act
-        BorrowRequestDto result = borrowService.updateRequestStatus(10L, "RETURNED");
+        BorrowRequestDto result = borrowService.updateRequestStatus(10L, "RETURNED", null);
 
         // Assert
         assertNotNull(result);
