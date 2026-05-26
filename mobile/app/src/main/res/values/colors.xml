@@ -1,21 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="red_500">#FFF44336</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    
-    <!-- App Colors -->
-    <color name="primary">#FF6200EE</color>
-    <color name="primary_dark">#FF3700B3</color>
-    <color name="accent">#FF03DAC5</color>
-    <color name="background">#FFFAFAFA</color>
-    <color name="surface">#FFFFFFFF</color>
-    <color name="text_primary">#FF212121</color>
-    <color name="text_secondary">#FF757575</color>
-    <color name="divider">#FFE0E0E0</color>
+    <!-- Core Brand Palette -->
+    <color name="primary">#1A2744</color>
+    <color name="primary_dark">#0F172A</color>
+    <color name="primary_light">#2E3D5C</color>
+    <color name="accent">#F59E0B</color>
+    <color name="accent_dark">#D97706</color>
+    <color name="accent_light">#FEF3C7</color>
+    <color name="accent_translucent">#33F59E0B</color>
+    <color name="accent_gradient_start">#F59E0B</color>
+    <color name="accent_gradient_end">#D97706</color>
+    <color name="primary_gradient_start">#1A2744</color>
+    <color name="primary_gradient_end">#0F172A</color>
+
+    <!-- Base UI Backgrounds & Surfaces -->
+    <color name="background">#F8FAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="card_border">#E2E8F0</color>
+    <color name="background_top">#F8FAFC</color>
+    <color name="background_bottom">#EEF2F7</color>
+    <color name="overlay_accent_soft">#1AF59E0B</color>
+    <color name="overlay_accent_faint">#0FF59E0B</color>
+    <color name="overlay_primary_soft">#140F172A</color>
+
+    <!-- High-Parity Typography Slate Colors -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_hint">#94A3B8</color>
+    <color name="divider">#E2E8F0</color>
+
+    <!-- Precise State Badges -->
+    <color name="status_available">#10B981</color>
+    <color name="status_borrowed">#F59E0B</color>
+    <color name="status_maintenance">#EF4444</color>
+    <color name="status_pending">#F59E0B</color>
+    <color name="status_approved">#10B981</color>
+    <color name="status_rejected">#EF4444</color>
+    <color name="status_returned">#0EA5E9</color>
+
+    <color name="status_available_bg">#2610B981</color>
+    <color name="status_borrowed_bg">#26F59E0B</color>
+    <color name="status_maintenance_bg">#26EF4444</color>
+    <color name="status_pending_bg">#26F59E0B</color>
+    <color name="status_approved_bg">#2610B981</color>
+    <color name="status_rejected_bg">#26EF4444</color>
+    <color name="status_returned_bg">#260EA5E9</color>
+
+    <!-- Base Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
 </resources>

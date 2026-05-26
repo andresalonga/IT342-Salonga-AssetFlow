@@ -1,7 +1,7 @@
 package edu.cit.salonga.assetflow
 
 import android.app.Application
-import edu.cit.salonga.assetflow.utils.TokenManager
+import edu.cit.salonga.assetflow.features.auth.utils.TokenManager
 
 class AssetFlowApp : Application() {
     override fun onCreate() {
