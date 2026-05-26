@@ -93,22 +93,101 @@
                             android:maxLines="1" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Image URL Field -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/imageInputLayout"
-                        style="@style/Widget.Assetflow.TextInputLayout"
+                    <!-- Upload Image Section -->
+                    <TextView
+                        android:id="@+id/formAssetUploadLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp">
+                        android:text="Upload Image (PNG/JPG, max 1MB)"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"
+                        android:layout_marginBottom="6dp" />
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/formAssetImageUrl"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/uploadImageCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="12dp"
+                        app:strokeColor="@color/card_border"
+                        app:strokeWidth="1dp"
+                        app:cardBackgroundColor="@color/surface"
+                        android:layout_marginBottom="16dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <FrameLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Image URL (Optional)"
-                            android:inputType="textUri"
-                            android:maxLines="1" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:padding="16dp">
+
+                            <!-- Placeholder Container -->
+                            <LinearLayout
+                                android:id="@+id/uploadPlaceholderContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:gravity="center">
+
+                                <ImageView
+                                    android:id="@+id/uploadPlaceholderIcon"
+                                    android:layout_width="48dp"
+                                    android:layout_height="48dp"
+                                    android:src="@android:drawable/ic_menu_upload"
+                                    app:tint="@color/text_secondary"
+                                    android:layout_marginBottom="8dp" />
+
+                                <TextView
+                                    android:id="@+id/uploadPlaceholderText"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Click to upload"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="PNG or JPG up to 1MB"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp"
+                                    android:layout_marginTop="2dp" />
+                            </LinearLayout>
+
+                            <!-- Preview Container -->
+                            <RelativeLayout
+                                android:id="@+id/imagePreviewContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="160dp"
+                                android:visibility="gone">
+
+                                <com.google.android.material.imageview.ShapeableImageView
+                                    android:id="@+id/imagePreview"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:scaleType="centerCrop"
+                                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.RoundCornerImageView"
+                                    android:background="@color/card_border" />
+
+                                <ImageButton
+                                    android:id="@+id/btnRemoveImage"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_alignParentTop="true"
+                                    android:layout_alignParentEnd="true"
+                                    android:layout_margin="8dp"
+                                    android:background="@drawable/bg_circle_red"
+                                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                                    app:tint="@color/white"
+                                    android:contentDescription="Remove image"
+                                    android:clickable="true"
+                                    android:focusable="true" />
+                            </RelativeLayout>
+
+                        </FrameLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- Category Selector Selection -->
                     <TextView

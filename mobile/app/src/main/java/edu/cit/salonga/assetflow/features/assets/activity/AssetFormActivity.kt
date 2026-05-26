@@ -1,15 +1,25 @@
 package edu.cit.salonga.assetflow.features.assets.activity
 
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textfield.TextInputEditText
 import edu.cit.salonga.assetflow.R
 import edu.cit.salonga.assetflow.features.assets.model.AssetCreateDto
@@ -17,24 +27,47 @@ import edu.cit.salonga.assetflow.features.assets.model.AssetDto
 import edu.cit.salonga.assetflow.features.assets.model.AssetUpdateDto
 import edu.cit.salonga.assetflow.network.ApiClient
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class AssetFormActivity : AppCompatActivity() {
 
     private lateinit var toolbar: MaterialToolbar
     private lateinit var nameInput: TextInputEditText
     private lateinit var serialInput: TextInputEditText
-    private lateinit var imageUrlInput: TextInputEditText
     private lateinit var descriptionInput: TextInputEditText
     private lateinit var categorySpinner: Spinner
     private lateinit var statusSpinner: Spinner
     private lateinit var saveButton: Button
     private lateinit var loadingIndicator: ProgressBar
 
+    // Image Upload Views
+    private lateinit var uploadImageCard: MaterialCardView
+    private lateinit var uploadPlaceholderContainer: LinearLayout
+    private lateinit var uploadPlaceholderIcon: ImageView
+    private lateinit var uploadPlaceholderText: android.widget.TextView
+    private lateinit var imagePreviewContainer: RelativeLayout
+    private lateinit var imagePreview: ShapeableImageView
+    private lateinit var btnRemoveImage: ImageButton
+
     private var assetId: Long = -1L
     private var isEditMode: Boolean = false
     
     private var categories = mutableListOf<String>()
     private val statuses = listOf("AVAILABLE", "BORROWED", "MAINTENANCE")
+
+    // Upload state variables
+    private var selectedImageUri: Uri? = null
+    private var existingImageUrl: String? = null
+
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            handleImageSelection(uri)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,12 +80,20 @@ class AssetFormActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.formToolbar)
         nameInput = findViewById(R.id.formAssetName)
         serialInput = findViewById(R.id.formAssetSerial)
-        imageUrlInput = findViewById(R.id.formAssetImageUrl)
         descriptionInput = findViewById(R.id.formAssetDescription)
         categorySpinner = findViewById(R.id.formAssetCategorySpinner)
         statusSpinner = findViewById(R.id.formAssetStatusSpinner)
         saveButton = findViewById(R.id.formSaveButton)
         loadingIndicator = findViewById(R.id.formLoadingIndicator)
+
+        // Bind image upload views
+        uploadImageCard = findViewById(R.id.uploadImageCard)
+        uploadPlaceholderContainer = findViewById(R.id.uploadPlaceholderContainer)
+        uploadPlaceholderIcon = findViewById(R.id.uploadPlaceholderIcon)
+        uploadPlaceholderText = findViewById(R.id.uploadPlaceholderText)
+        imagePreviewContainer = findViewById(R.id.imagePreviewContainer)
+        imagePreview = findViewById(R.id.imagePreview)
+        btnRemoveImage = findViewById(R.id.btnRemoveImage)
 
         // Setup Toolbar back press
         setSupportActionBar(toolbar)
@@ -69,6 +110,15 @@ class AssetFormActivity : AppCompatActivity() {
             toolbar.title = "Edit Asset"
         } else {
             toolbar.title = "Register Asset"
+        }
+
+        // Set listeners for upload
+        uploadImageCard.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        btnRemoveImage.setOnClickListener {
+            removeSelectedImage()
         }
 
         saveButton.setOnClickListener { validateAndSave() }
@@ -114,7 +164,6 @@ class AssetFormActivity : AppCompatActivity() {
     private fun populateFormFields(asset: AssetDto) {
         nameInput.setText(asset.name ?: "")
         serialInput.setText(asset.serialNumber ?: "")
-        imageUrlInput.setText(asset.imageUrl ?: "")
         descriptionInput.setText(asset.description ?: "")
 
         // Select correct spinner values
@@ -127,12 +176,107 @@ class AssetFormActivity : AppCompatActivity() {
         if (statusIndex != -1) {
             statusSpinner.setSelection(statusIndex)
         }
+
+        // Handle existing image pre-loading
+        existingImageUrl = asset.imageUrl
+        if (!existingImageUrl.isNullOrEmpty()) {
+            uploadPlaceholderContainer.visibility = View.GONE
+            imagePreviewContainer.visibility = View.VISIBLE
+
+            val finalUrl = existingImageUrl
+                ?.replace("localhost", ApiClient.BASE_IP)
+                ?.replace("10.0.2.2", ApiClient.BASE_IP)
+
+            Glide.with(this)
+                .load(finalUrl)
+                .placeholder(R.drawable.bg_asset_placeholder)
+                .error(R.drawable.bg_asset_placeholder)
+                .centerCrop()
+                .into(imagePreview)
+        }
+    }
+
+    private fun handleImageSelection(uri: Uri) {
+        try {
+            val contentResolver = this.contentResolver
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            var fileSize = 0L
+            var fileName = "image.jpg"
+            cursor?.use { c ->
+                if (c.moveToFirst()) {
+                    val sizeIndex = c.getColumnIndex(OpenableColumns.SIZE)
+                    val nameIndex = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (sizeIndex != -1) fileSize = c.getLong(sizeIndex)
+                    if (nameIndex != -1) fileName = c.getString(nameIndex)
+                }
+            }
+
+            val mimeType = contentResolver.getType(uri) ?: ""
+            val isValidType = mimeType == "image/png" || mimeType == "image/jpeg" || mimeType == "image/jpg" ||
+                              fileName.endsWith(".png", true) || fileName.endsWith(".jpg", true) || fileName.endsWith(".jpeg", true)
+
+            if (!isValidType) {
+                Toast.makeText(this, "Only PNG or JPG images are allowed.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (fileSize > 1024 * 1024) {
+                Toast.makeText(this, "Please upload an image up to 1MB.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            selectedImageUri = uri
+            existingImageUrl = null // clear pre-existing url since we selected a new one
+            uploadPlaceholderContainer.visibility = View.GONE
+            imagePreviewContainer.visibility = View.VISIBLE
+            imagePreview.setImageURI(uri)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error selecting image: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun removeSelectedImage() {
+        selectedImageUri = null
+        existingImageUrl = null
+        imagePreviewContainer.visibility = View.GONE
+        uploadPlaceholderContainer.visibility = View.VISIBLE
+        imagePreview.setImageDrawable(null)
+    }
+
+    private suspend fun uploadSelectedImage(): String? {
+        val uri = selectedImageUri ?: return null
+        val contentResolver = this.contentResolver
+        val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+        var fileName = "image.jpg"
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use { c ->
+            if (c.moveToFirst()) {
+                val nameIndex = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameIndex != -1) fileName = c.getString(nameIndex)
+            }
+        }
+
+        val inputStream = contentResolver.openInputStream(uri)
+        val bytes = inputStream?.readBytes()
+        inputStream?.close()
+
+        if (bytes == null) return null
+
+        val requestFile = bytes.toRequestBody(mimeType.toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", fileName, requestFile)
+
+        val response = ApiClient.assetService.uploadAssetImage(body)
+        if (response.isSuccessful && response.body() != null) {
+            return response.body()!!["url"]
+        } else {
+            val error = response.errorBody()?.string() ?: "Failed to upload image"
+            throw Exception(error)
+        }
     }
 
     private fun validateAndSave() {
         val name = nameInput.text.toString().trim()
         val serial = serialInput.text.toString().trim()
-        val imageUrl = imageUrlInput.text.toString().trim().let { if (it.isEmpty()) null else it }
         val description = descriptionInput.text.toString().trim()
 
         if (name.isEmpty()) {
@@ -158,6 +302,13 @@ class AssetFormActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
+                // Determine whether to upload a new image or keep/remove the existing image url
+                val imageUrl = if (selectedImageUri != null) {
+                    uploadSelectedImage()
+                } else {
+                    existingImageUrl
+                }
+
                 if (isEditMode) {
                     val request = AssetUpdateDto(name, serial, category, status, description, imageUrl)
                     val response = ApiClient.assetService.updateAsset(assetId, request)

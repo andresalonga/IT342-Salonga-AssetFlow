@@ -25,4 +25,10 @@ interface AssetService {
 
     @DELETE("api/assets/{assetId}")
     suspend fun deleteAsset(@Path("assetId") assetId: Long): Response<Unit>
+
+    @Multipart
+    @POST("api/assets/upload")
+    suspend fun uploadAssetImage(
+        @Part file: okhttp3.MultipartBody.Part
+    ): Response<Map<String, String>>
 }
