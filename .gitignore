@@ -1,0 +1,9 @@
+# Local editor settings
+.vscode/settings.json
+
+# Local Gradle override
+mobile/gradle.properties
+
+# Runtime uploaded assets
+backend/uploads/assets/*
+!backend/uploads/assets/.gitkeep

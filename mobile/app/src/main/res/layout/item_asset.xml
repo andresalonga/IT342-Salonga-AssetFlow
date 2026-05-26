@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/card_border"
+    app:strokeWidth="1dp"
+    app:cardBackgroundColor="@color/surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Asset Image -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/assetImage"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg_asset_placeholder"
+            android:contentDescription="Asset Image"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.RoundCornerImageView" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/assetName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Asset Name Placeholder"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:id="@+id/assetCategory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category"
+                    android:textSize="13sp"
+                    android:textColor="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/assetStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AVAILABLE"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@drawable/bg_status_badge"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/assetSerial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SN: 12345678"
+                android:textSize="12sp"
+                android:textColor="@color/text_hint"
+                android:layout_marginTop="6dp" />
+
+            <LinearLayout
+                android:id="@+id/adminActionPanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:visibility="gone">
+
+                <ImageButton
+                    android:id="@+id/editAssetButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_edit"
+                    android:contentDescription="Edit Asset"
+                    app:tint="@color/text_secondary"
+                    android:layout_marginEnd="8dp" />
+
+                <ImageButton
+                    android:id="@+id/deleteAssetButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:contentDescription="Delete Asset"
+                    app:tint="@color/status_rejected" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

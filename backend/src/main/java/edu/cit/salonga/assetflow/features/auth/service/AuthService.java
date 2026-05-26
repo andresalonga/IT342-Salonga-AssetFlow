@@ -1,0 +1,361 @@
+package edu.cit.salonga.assetflow.features.auth.service;
+
+import edu.cit.salonga.assetflow.features.auth.dto.AuthResponse;
+import edu.cit.salonga.assetflow.features.auth.dto.GoogleTokenResponse;
+import edu.cit.salonga.assetflow.features.auth.dto.GoogleUserInfo;
+import edu.cit.salonga.assetflow.features.auth.dto.LoginRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.RegisterRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.UpdateProfileRequest;
+import edu.cit.salonga.assetflow.features.auth.dto.UserDto;
+import edu.cit.salonga.assetflow.features.auth.entity.Role;
+import edu.cit.salonga.assetflow.features.auth.entity.User;
+import edu.cit.salonga.assetflow.features.auth.repository.UserRepository;
+import edu.cit.salonga.assetflow.features.notification.service.EmailService;
+import edu.cit.salonga.assetflow.util.JwtUtil;
+import edu.cit.salonga.assetflow.util.AuthenticationUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+@Service
+public class AuthService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private AuthenticationUtil authenticationUtil;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Value("${google.oauth.client-id}")
+    private String googleClientId;
+
+    @Value("${google.oauth.client-secret}")
+    private String googleClientSecret;
+
+    @Value("${google.oauth.redirect-uri}")
+    private String googleRedirectUri;
+
+    @Value("${google.oauth.frontend-redirect}")
+    private String googleFrontendRedirect;
+
+    @Value("${assetflow.avatar-upload-dir:uploads/avatars}")
+    private String avatarUploadDir;
+
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private static final long MAX_UPLOAD_BYTES = 1_048_576; // 1MB
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of("image/png", "image/jpeg");
+
+    public AuthResponse register(RegisterRequest request) {
+        // Check if email already exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return new AuthResponse("Email already registered", null, null, null, null, null, false);
+        }
+
+        // Create new user
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        
+        // Hash the password securely
+        user.setPassword(encoder.encode(request.getPassword()));
+
+        // Assign role based on email domain
+        if (request.getEmail().contains("admin.com")) {
+            user.setRole(Role.ADMIN);
+        } else {
+            user.setRole(Role.USER);
+        }
+
+        // Save user to database
+        User savedUser = userRepository.save(user);
+
+        emailService.sendWelcomeEmail(savedUser);
+
+        // Generate JWT token
+        String token = jwtUtil.generateToken(savedUser, savedUser.getId(), savedUser.getRole().name());
+
+        return new AuthResponse(
+            "User registered successfully",
+            savedUser.getId(),
+            savedUser.getName(),
+            savedUser.getEmail(),
+            savedUser.getRole().name(),
+            token,
+            true
+        );
+    }
+
+    public AuthResponse login(LoginRequest request) {
+        // Find user by email
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        
+        if (user == null) {
+            return new AuthResponse("User not found", null, null, null, null, null, false);
+        }
+
+        // Verify password
+        if (!encoder.matches(request.getPassword(), user.getPassword())) {
+            return new AuthResponse("Invalid credentials", null, null, null, null, null, false);
+        }
+
+        // Generate JWT token
+        String token = jwtUtil.generateToken(user, user.getId(), user.getRole().name());
+
+        return new AuthResponse(
+            "Login successful",
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getRole().name(),
+            token,
+            true
+        );
+    }
+
+    public UserDto updateProfile(UpdateProfileRequest request) {
+        if (request == null) {
+            throw new RuntimeException("Invalid request");
+        }
+
+        String email = authenticationUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName().trim());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String newEmail = request.getEmail().trim();
+            if (!newEmail.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+                throw new RuntimeException("Email already registered");
+            }
+            user.setEmail(newEmail);
+        }
+
+        User saved = userRepository.save(user);
+        return toDto(saved);
+    }
+
+    public Map<String, String> uploadAvatar(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("File is required");
+        }
+
+        if (file.getSize() > MAX_UPLOAD_BYTES) {
+            throw new RuntimeException("File exceeds 1MB limit");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
+            throw new RuntimeException("Only PNG and JPG files are allowed");
+        }
+
+        String extension = contentType.equals("image/png") ? ".png" : ".jpg";
+        String filename = UUID.randomUUID() + extension;
+
+        Path uploadPath = Paths.get(avatarUploadDir).toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+
+        Path destination = uploadPath.resolve(filename).normalize();
+        file.transferTo(destination);
+
+        String url = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/uploads/avatars/")
+                .path(filename)
+                .toUriString();
+
+        String email = authenticationUtil.getCurrentUserEmail();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setAvatarUrl(url);
+        userRepository.save(user);
+
+        return Map.of("avatarUrl", url);
+    }
+
+
+    public String buildGoogleLoginUrl() {
+        if (googleClientId == null || googleClientId.isBlank()) {
+            throw new RuntimeException("Google OAuth client ID is not configured");
+        }
+
+        String scope = "openid email profile";
+        return "https://accounts.google.com/o/oauth2/v2/auth" +
+                "?client_id=" + googleClientId +
+                "&redirect_uri=" + googleRedirectUri +
+                "&response_type=code" +
+                "&scope=" + scope.replace(" ", "%20");
+    }
+
+    public String getFrontendRedirectUri() {
+        return googleFrontendRedirect;
+    }
+
+    public AuthResponse handleGoogleCallback(String code) {
+        GoogleTokenResponse tokenResponse = exchangeCodeForToken(code);
+        GoogleUserInfo userInfo = fetchGoogleUserInfo(tokenResponse.getAccessToken());
+
+        if (userInfo == null || userInfo.getEmail() == null) {
+            return new AuthResponse("Failed to read Google profile", null, null, null, null, null, false);
+        }
+
+        User user = userRepository.findByGoogleId(userInfo.getSub())
+                .orElseGet(() -> userRepository.findByEmail(userInfo.getEmail()).orElse(null));
+
+        if (user == null) {
+            user = new User();
+            user.setName(userInfo.getName() != null ? userInfo.getName() : "Google User");
+            user.setEmail(userInfo.getEmail());
+            user.setGoogleId(userInfo.getSub());
+            user.setPassword(encoder.encode(UUID.randomUUID().toString()));
+            user.setRole(Role.USER);
+            user = userRepository.save(user);
+        } else if (user.getGoogleId() == null) {
+            user.setGoogleId(userInfo.getSub());
+            user = userRepository.save(user);
+        }
+
+        String token = jwtUtil.generateToken(user, user.getId(), user.getRole().name());
+
+        return new AuthResponse(
+                "Login successful",
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name(),
+                token,
+                true
+        );
+    }
+
+    public AuthResponse handleGoogleIdToken(String idToken) {
+        if (idToken == null || idToken.isBlank()) {
+            return new AuthResponse("Invalid id token", null, null, null, null, null, false);
+        }
+
+        // Verify ID token via Google's tokeninfo endpoint
+        String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+        ResponseEntity<GoogleUserInfo> response = restTemplate.getForEntity(url, GoogleUserInfo.class);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            return new AuthResponse("Failed to verify id token", null, null, null, null, null, false);
+        }
+
+        GoogleUserInfo userInfo = response.getBody();
+
+        if (userInfo.getEmail() == null) {
+            return new AuthResponse("Failed to read Google profile", null, null, null, null, null, false);
+        }
+
+        User user = userRepository.findByGoogleId(userInfo.getSub())
+                .orElseGet(() -> userRepository.findByEmail(userInfo.getEmail()).orElse(null));
+
+        if (user == null) {
+            user = new User();
+            user.setName(userInfo.getName() != null ? userInfo.getName() : "Google User");
+            user.setEmail(userInfo.getEmail());
+            user.setGoogleId(userInfo.getSub());
+            user.setPassword(encoder.encode(UUID.randomUUID().toString()));
+            user.setRole(Role.USER);
+            user = userRepository.save(user);
+        } else if (user.getGoogleId() == null) {
+            user.setGoogleId(userInfo.getSub());
+            user = userRepository.save(user);
+        }
+
+        String token = jwtUtil.generateToken(user, user.getId(), user.getRole().name());
+
+        return new AuthResponse(
+                "Login successful",
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name(),
+                token,
+                true
+        );
+    }
+
+    private GoogleTokenResponse exchangeCodeForToken(String code) {
+        if (googleClientId == null || googleClientId.isBlank() || googleClientSecret == null || googleClientSecret.isBlank()) {
+            throw new RuntimeException("Google OAuth client credentials are not configured");
+        }
+
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("code", code);
+        body.add("client_id", googleClientId);
+        body.add("client_secret", googleClientSecret);
+        body.add("redirect_uri", googleRedirectUri);
+        body.add("grant_type", "authorization_code");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+        ResponseEntity<GoogleTokenResponse> response = restTemplate.postForEntity(
+                "https://oauth2.googleapis.com/token",
+                request,
+                GoogleTokenResponse.class
+        );
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            throw new RuntimeException("Failed to exchange authorization code");
+        }
+
+        return response.getBody();
+    }
+
+    private GoogleUserInfo fetchGoogleUserInfo(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        ResponseEntity<GoogleUserInfo> response = restTemplate.exchange(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                HttpMethod.GET,
+                request,
+                GoogleUserInfo.class
+        );
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Failed to fetch Google user info");
+        }
+
+        return response.getBody();
+    }
+
+    private UserDto toDto(User user) {
+        return new UserDto(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name(),
+                user.getAvatarUrl(),
+                user.getCreatedAt()
+        );
+    }
+}

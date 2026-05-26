@@ -72,6 +72,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const setUserFromOAuth = (userData) => {
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
+
   const isAdmin = user?.role === "admin";
   const isStudent = user?.role === "student";
 
@@ -81,6 +87,7 @@ export const AuthProvider = ({ children }) => {
       login, 
       logout, 
       register,
+      setUserFromOAuth,
       isAdmin, 
       isStudent,
       loading 

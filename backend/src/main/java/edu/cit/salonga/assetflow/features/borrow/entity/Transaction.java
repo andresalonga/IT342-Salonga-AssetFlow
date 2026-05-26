@@ -1,0 +1,61 @@
+package edu.cit.salonga.assetflow.features.borrow.entity;
+
+import edu.cit.salonga.assetflow.features.auth.entity.User;
+import edu.cit.salonga.assetflow.features.assets.entity.Asset;
+import jakarta.persistence.*;
+import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "transactions")
+@Data
+public class Transaction {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asset_id", nullable = false)
+    private Asset asset;
+
+    @Column(name = "request_date")
+    private LocalDate requestDate;
+
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
+    @Column(name = "return_date")
+    private LocalDate returnDate;
+
+    @Column(name = "rejection_note", length = 500)
+    private String rejectionNote;
+
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status = TransactionStatus.PENDING;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "status_updated_at")
+    private LocalDateTime statusUpdatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        if (requestDate == null) {
+            requestDate = LocalDate.now();
+        }
+        createdAt = LocalDateTime.now();
+        statusUpdatedAt = createdAt;
+    }
+
+    public enum TransactionStatus {
+        PENDING, APPROVED, REJECTED, RETURNED
+    }
+}

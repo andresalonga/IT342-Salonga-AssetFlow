@@ -32,17 +32,27 @@
             android:label="@string/app_name"
             android:theme="@style/Theme.Assetflow" />
         <activity
-            android:name=".RegisterActivity"
+            android:name=".features.auth.activity.RegisterActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.Assetflow" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".features.auth.activity.LoginActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.Assetflow" />
         <activity
-            android:name=".DashboardActivity"
+            android:name=".features.assets.activity.DashboardActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Assetflow" />
+        <activity
+            android:name=".features.assets.activity.AssetDetailActivity"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Assetflow" />
+        <activity
+            android:name=".features.assets.activity.AssetFormActivity"
             android:exported="false"
             android:label="@string/app_name"
             android:theme="@style/Theme.Assetflow" />

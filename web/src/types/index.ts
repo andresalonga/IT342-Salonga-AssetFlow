@@ -26,9 +26,13 @@ export interface BorrowRequest {
   id: string;
   userId: string;
   userName: string;
+  userEmail?: string;
   assetId: string;
   assetName: string;
   requestDate: string;
   dueDate: string;
   status: "pending" | "approved" | "rejected" | "returned";
+  requestDateTime?: string;
+  statusUpdatedAt?: string;
+  rejectionNote?: string;
 }

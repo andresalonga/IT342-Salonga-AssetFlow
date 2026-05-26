@@ -1,16 +1,17 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/shared/ui/toaster";
+import { Toaster as Sonner } from "@/shared/ui/sonner";
+import { TooltipProvider } from "@/shared/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import DashboardPage from "./pages/DashboardPage";
-import AssetDetailPage from "./pages/AssetDetailPage";
-import BorrowRequestsPage from "./pages/BorrowRequestsPage";
-import MyTransactionsPage from "./pages/MyTransactionsPage";
-import AddAssetPage from "./pages/AddAssetPage";
+import LoginPage from "@/features/auth/pages/LoginPage";
+import RegisterPage from "@/features/auth/pages/RegisterPage";
+import OAuthCallbackPage from "@/features/auth/pages/OAuthCallbackPage";
+import DashboardPage from "@/features/assets/pages/DashboardPage";
+import AssetDetailPage from "@/features/assets/pages/AssetDetailPage";
+import BorrowRequestsPage from "@/features/borrow/pages/BorrowRequestsPage";
+import MyTransactionsPage from "@/features/borrow/pages/MyTransactionsPage";
+import AddAssetPage from "@/features/assets/pages/AddAssetPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
       <Route path="/assets/:id" element={<ProtectedRoute><AssetDetailPage /></ProtectedRoute>} />
       <Route path="/assets/new" element={<ProtectedRoute adminOnly><AddAssetPage /></ProtectedRoute>} />

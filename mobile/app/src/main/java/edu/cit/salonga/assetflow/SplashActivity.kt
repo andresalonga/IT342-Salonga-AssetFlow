@@ -6,7 +6,9 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import edu.cit.salonga.assetflow.utils.TokenManager
+import edu.cit.salonga.assetflow.features.auth.utils.TokenManager
+import edu.cit.salonga.assetflow.features.assets.activity.DashboardActivity
+import edu.cit.salonga.assetflow.features.auth.activity.LoginActivity
 
 class SplashActivity : AppCompatActivity() {
     

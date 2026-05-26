@@ -8,6 +8,7 @@ export const CATEGORIES = [
   "Audio/Visual",
   "Computing",
   "Sports Equipment",
+  "Other",
 ];
 
 export const MOCK_ASSETS: Asset[] = [

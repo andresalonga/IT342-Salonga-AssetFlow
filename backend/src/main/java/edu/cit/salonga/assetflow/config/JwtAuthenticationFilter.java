@@ -1,6 +1,6 @@
 package edu.cit.salonga.assetflow.config;
 
-import edu.cit.salonga.assetflow.service.CustomUserDetailsService;
+import edu.cit.salonga.assetflow.features.auth.service.CustomUserDetailsService;
 import edu.cit.salonga.assetflow.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
