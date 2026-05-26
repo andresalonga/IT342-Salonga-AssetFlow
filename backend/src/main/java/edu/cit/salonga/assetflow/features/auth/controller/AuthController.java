@@ -120,6 +120,26 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(url)).build();
     }
 
+    @PostMapping("/google/mobile")
+    public ResponseEntity<AuthResponse> googleMobile(@RequestBody Map<String, String> payload) {
+        String idToken = payload.get("idToken");
+        if (idToken == null || idToken.isBlank()) {
+            return ResponseEntity.badRequest().body(new AuthResponse("Missing idToken", null, null, null, null, null, false));
+        }
+
+        try {
+            AuthResponse response = authService.handleGoogleIdToken(idToken);
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponse(e.getMessage() == null ? "Google sign-in failed" : e.getMessage(), null, null, null, null, null, false));
+        }
+    }
+
     @GetMapping("/google/callback")
     public ResponseEntity<Void> googleCallback(
             @RequestParam(required = false) String code,

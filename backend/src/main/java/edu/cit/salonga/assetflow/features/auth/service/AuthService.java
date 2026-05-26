@@ -252,6 +252,54 @@ public class AuthService {
         );
     }
 
+    public AuthResponse handleGoogleIdToken(String idToken) {
+        if (idToken == null || idToken.isBlank()) {
+            return new AuthResponse("Invalid id token", null, null, null, null, null, false);
+        }
+
+        // Verify ID token via Google's tokeninfo endpoint
+        String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+        ResponseEntity<GoogleUserInfo> response = restTemplate.getForEntity(url, GoogleUserInfo.class);
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            return new AuthResponse("Failed to verify id token", null, null, null, null, null, false);
+        }
+
+        GoogleUserInfo userInfo = response.getBody();
+
+        if (userInfo.getEmail() == null) {
+            return new AuthResponse("Failed to read Google profile", null, null, null, null, null, false);
+        }
+
+        User user = userRepository.findByGoogleId(userInfo.getSub())
+                .orElseGet(() -> userRepository.findByEmail(userInfo.getEmail()).orElse(null));
+
+        if (user == null) {
+            user = new User();
+            user.setName(userInfo.getName() != null ? userInfo.getName() : "Google User");
+            user.setEmail(userInfo.getEmail());
+            user.setGoogleId(userInfo.getSub());
+            user.setPassword(encoder.encode(UUID.randomUUID().toString()));
+            user.setRole(Role.USER);
+            user = userRepository.save(user);
+        } else if (user.getGoogleId() == null) {
+            user.setGoogleId(userInfo.getSub());
+            user = userRepository.save(user);
+        }
+
+        String token = jwtUtil.generateToken(user, user.getId(), user.getRole().name());
+
+        return new AuthResponse(
+                "Login successful",
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRole().name(),
+                token,
+                true
+        );
+    }
+
     private GoogleTokenResponse exchangeCodeForToken(String code) {
         if (googleClientId == null || googleClientId.isBlank() || googleClientSecret == null || googleClientSecret.isBlank()) {
             throw new RuntimeException("Google OAuth client credentials are not configured");
