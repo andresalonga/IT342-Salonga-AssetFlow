@@ -149,7 +149,8 @@ initializeBorrowRequests();
 
 const mapAssetDto = (dto: AssetDto): Asset => {
   const addedDate = dto.createdAt ? dto.createdAt.split("T")[0] : new Date().toISOString().split("T")[0];
-  const imageUrl = dto.imageUrl ? (dto.imageUrl.startsWith("/") ? `${API_ROOT_URL}${dto.imageUrl}` : dto.imageUrl) : "";
+  const rawUrl = dto.imageUrl ? (dto.imageUrl.startsWith("/") ? `${API_ROOT_URL}${dto.imageUrl}` : dto.imageUrl) : "";
+  const imageUrl = rawUrl.replace("10.0.2.2", "localhost");
 
   return {
     id: String(dto.id),
