@@ -100,6 +100,17 @@ class ProfileFragment : Fragment() {
         // Clear all token and credential values in SharedPreferences
         TokenManager.clearAll()
 
+        // Explicitly sign out of Google OAuth to clear session and show account chooser next time
+        try {
+            val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
+                com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+            ).build()
+            val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(requireContext(), gso)
+            googleSignInClient.signOut()
+        } catch (e: Exception) {
+            android.util.Log.e("ProfileFragment", "Error signing out of Google OAuth", e)
+        }
+
         // Redirect to login screen and clear activity history backstack
         val intent = Intent(requireActivity(), LoginActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
