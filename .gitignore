@@ -8,3 +8,5 @@ mobile/gradle.properties
 backend/uploads/assets/*
 !backend/uploads/assets/.gitkeepmobile/hs_err_pid*.log
 mobile/replay_pid*.log
+mobile/hs_err_pid*.log
+mobile/replay_pid*.log
