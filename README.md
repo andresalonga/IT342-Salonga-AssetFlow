@@ -1,6 +1,6 @@
 # IT342-Salonga-AssetFlow
 
-Short three-tier Asset/Equipment management system for lab and organization use. This repository contains the backend (Spring Boot), web client (React + TypeScript), and mobile client (Android Kotlin) used for the IT342 final submission.
+Short three-tier Asset/Equipment management system for lab and organization use. This repository contains the backend (Spring Boot), web client (React + TypeScript), and mobile client (Android Kotlin) used for the IT342 final project submission.
 
 Status: feature-complete for most coursework requirements. One required item (External Public API integration) was intentionally omitted and is documented below.
 
@@ -40,18 +40,3 @@ Important notes
 - File uploads: stored and served by the backend; endpoints exist for upload/download.
 - Email (SMTP): `EmailService` sends real emails when SMTP environment variables are configured. No console-only emails.
 - Real-time: polling is implemented in the web/mobile clients. WebSocket was not used.
-
-Omitted by design
-- External Public API integration (required by the original assignment) was intentionally omitted to prioritize security fixes and mobile hardening. This decision is documented in `docs/REFACTORING_SUMMARY.md` and should be called out during submission.
-
-Checklist & branch status
-- Current working branch for finalization: `chore/finalize-docs-readme` (created from `fix/defense-priority-gaps`).
-- Changes applied include: method-level RBAC on asset endpoints, removal of client-side mock/localStorage fallbacks, EncryptedSharedPreferences for mobile JWT storage, and docs updates.
-
-Contributing / Submission
-- Run backend tests: from `backend/` run `./mvnw test`.
-- Validate mobile on device/emulator (EncryptedSharedPreferences requires Android runtime support).
-- After final checks push `chore/finalize-docs-readme` and open a PR into `main` with a short summary of the deliberate omission.
-
-Contact
-Owner: ANDRE SALONGA
