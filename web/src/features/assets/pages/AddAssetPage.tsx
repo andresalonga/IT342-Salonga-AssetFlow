@@ -16,7 +16,6 @@ import { useToast } from "@/shared/hooks/use-toast";
 import { Upload } from "lucide-react";
 import { assetApi, categoryApi, getToken } from "@/lib/api";
 import { AssetStatus } from "@/types";
-import { CATEGORIES } from "@/data/mock";
 
 const AddAssetPage = () => {
   const { id } = useParams();
@@ -26,28 +25,28 @@ const AddAssetPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [categories, setCategories] = useState<string[]>(CATEGORIES);
-    useEffect(() => {
-      let active = true;
-      const loadCategories = async () => {
-        try {
-          const token = getToken();
-          const data = await categoryApi.getAll(token || undefined);
-          if (active && Array.isArray(data) && data.length > 0) {
-            setCategories(data);
-          }
-        } catch (error) {
-          if (active) {
-            setCategories(CATEGORIES);
-          }
+  const [categories, setCategories] = useState<string[]>([]);
+  useEffect(() => {
+    let active = true;
+    const loadCategories = async () => {
+      try {
+        const token = getToken();
+        const data = await categoryApi.getAll(token || undefined);
+        if (active && Array.isArray(data)) {
+          setCategories(data);
         }
-      };
+      } catch (error) {
+        if (active) {
+          setCategories([]);
+        }
+      }
+    };
 
-      loadCategories();
-      return () => {
-        active = false;
-      };
-    }, []);
+    loadCategories();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");

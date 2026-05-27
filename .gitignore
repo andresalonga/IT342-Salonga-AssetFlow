@@ -6,4 +6,7 @@ mobile/gradle.properties
 
 # Runtime uploaded assets
 backend/uploads/assets/*
-!backend/uploads/assets/.gitkeep
+!backend/uploads/assets/.gitkeepmobile/hs_err_pid*.log
+mobile/replay_pid*.log
+mobile/hs_err_pid*.log
+mobile/replay_pid*.log
