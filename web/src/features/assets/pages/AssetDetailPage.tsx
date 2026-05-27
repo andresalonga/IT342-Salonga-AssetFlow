@@ -111,9 +111,6 @@ const AssetDetailPage = () => {
 
     setIsBorrowing(true);
     try {
-      // Store asset info for the API call
-      localStorage.setItem("currentAsset", JSON.stringify(asset));
-      
       const token = getToken();
       await borrowApi.submitRequest(
         {
