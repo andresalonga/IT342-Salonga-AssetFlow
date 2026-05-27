@@ -11,6 +11,7 @@ import edu.cit.salonga.assetflow.util.AuthenticationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -74,6 +75,7 @@ public class AssetController {
     }
 
     // Create asset
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> createAsset(@RequestBody AssetCreateDto request) {
         try {
@@ -89,6 +91,7 @@ public class AssetController {
     }
 
     // Update asset
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{assetId}")
     public ResponseEntity<?> updateAsset(@PathVariable Long assetId, @RequestBody AssetUpdateDto request) {
         try {
@@ -104,6 +107,7 @@ public class AssetController {
     }
 
     // Delete asset
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{assetId}")
     public ResponseEntity<?> deleteAsset(@PathVariable Long assetId) {
         try {
@@ -119,6 +123,7 @@ public class AssetController {
     }
 
     // Upload asset image (PNG/JPG only)
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/upload")
     public ResponseEntity<?> uploadAssetImage(@RequestParam("file") MultipartFile file) {
         try {
@@ -158,6 +163,7 @@ public class AssetController {
     }
 
     // Submit borrow request for an asset
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{assetId}/borrow")
     public ResponseEntity<?> submitBorrowRequest(
             @PathVariable Long assetId,
@@ -179,6 +185,7 @@ public class AssetController {
     }
 
     // Get all borrow requests (admin only)
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/borrow-requests")
     public ResponseEntity<?> getAllBorrowRequests() {
         try {
@@ -196,6 +203,7 @@ public class AssetController {
     }
 
     // Update borrow request status (admin only)
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/borrow-requests/{requestId}")
     public ResponseEntity<?> updateBorrowRequestStatus(
             @PathVariable Long requestId,
@@ -217,6 +225,7 @@ public class AssetController {
     }
 
     // Get user's borrow requests
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/my-requests")
     public ResponseEntity<?> getMyBorrowRequests() {
         try {
